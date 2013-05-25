@@ -19,14 +19,24 @@ sub web_add_author {
 	return;
     }
 
+    # Check for duplication.
+    my $caller = $q->param('return_address') || $self->home_page_url($q);
+    for my $author (@{$self->authors}) {
+	if ($author->author_id == $author_id) {
+	    my $msg = join(' ', $author->author_name, 'is already an author.');
+	    my $return_address = $q->oligo_query($caller, _messages => $msg);
+	    print $q->redirect($return_address);
+	    return;
+	}
+    }
+
     # Add the thing.
     my $dbh = $q->connect_to_database();
     $dbh->do('insert into book_author_map (author_id, book_id) values (?, ?)',
 	     undef, $author_id, $self->book_id)
 	or die $dbh->errstr;
-    my $caller = $q->param('return_address') || $self->home_page_name;
     my $return_address = $q->oligo_query($caller, message => 'Author added');
-    print $q->redirect($caller);
+    print $q->redirect($return_address);
 }
 
 1;
