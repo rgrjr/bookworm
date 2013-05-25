@@ -1,0 +1,125 @@
+# The Bookworm "Book" class.
+#
+# [created.  -- rgr, 29-Jan-11.]
+#
+# $Id$
+
+use strict;
+use warnings;
+
+package Bookworm::Book;
+
+use base qw(Bookworm::Base);
+
+BEGIN {
+    Bookworm::Book->build_field_accessors
+	([ qw(book_id title publisher_id publication_year
+              category notes location_id) ]);
+}
+
+sub table_name { 'book'; }
+sub primary_key { 'book_id'; }
+
+# Autoloaded subs.
+    sub web_add_author;
+
+sub pretty_name { shift()->title(); }
+sub home_page_name { 'add-book.cgi'; }
+
+sub authors {
+    my ($self, @new_value) = @_;
+
+    if (@new_value) {
+	$self->{_authors} = $new_value[0];
+    }
+    elsif ($self->{_authors}) {
+	return $self->{_authors};
+    }
+    else {
+	require Bookworm::Author;
+	my $authors = [ ];
+	my $query = qq(select author_id
+		       from book_author_map
+		       where book_id = ?);
+	my $dbh = $self->connect_to_database;
+	my $ids = $dbh->selectcol_arrayref($query, undef, $self->book_id)
+	    or die $dbh->errstr;
+	for my $id (@$ids) {
+	    push(@$authors, Bookworm::Author->fetch($id));
+	}
+	$self->{_authors} = $authors;
+	return $authors;
+    }
+}
+
+sub validate {
+    my ($self, $interface) = @_;
+
+    $interface->_error("Books must have a title.\n")
+	unless $self->title;
+    $interface->_error("Books must have a publisher.\n")
+	unless $self->publisher_id;
+}
+
+sub format_authors_field {
+    my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
+
+    if ($value && ref($value) && @$value) {
+	return join(' ', map { $_->html_link($q); } @$value);
+    }
+    else {
+	return 'none';
+    }
+}
+
+my @field_descriptors
+    = ({ accessor => 'book_id', verbosity => 2 },
+       { accessor => 'title', pretty_name => 'Title',
+	 type => 'string' },
+       { accessor => 'authors', pretty_name => 'Authors',
+	 type => 'authors' },
+       { accessor => 'publisher_id', pretty_name => 'Publisher',
+	 type => 'foreign_key', class => 'Bookworm::Publisher',
+	 edit_p => 'update-publisher.cgi' },
+       { accessor => 'publication_year', pretty_name => 'Year',
+	 type => 'string' },
+       { accessor => 'category', pretty_name => 'Category',
+	 type => 'enumeration',
+	 values => [ qw(fiction sf history biography text nonfiction) ] },
+       { accessor => 'notes', pretty_name => 'Notes',
+	 type => 'string' },
+       { accessor => 'location_id', pretty_name => 'Location'
+	 # type => 'foreign_key', class => 'Bookworm::Location'
+       }
+    );
+
+sub local_display_fields { return \@field_descriptors };
+
+sub default_search_fields {
+    my ($class) = @_;
+
+    return [ {  accessor => 'title',
+		pretty_name => 'Title/ID',
+		search_type => 'string',
+		search_id => 'book_id',
+		search_field => 'title' },
+	     qw(publisher_id publication_year category notes) ];
+}
+
+sub default_display_columns {
+    return [ { accessor => 'title', pretty_name => 'Book',
+	       type => 'return_address_link',
+	       return_address => 'add-book.cgi' },
+	     qw(publisher_id publication_year category notes location_id) ];
+}
+
+sub post_web_update {
+    my ($self, $q) = @_;
+
+    return $q->ul(map { $q->li($_); }
+		  $q->a({ href => $q->oligo_query('add-book-author.cgi',
+						  book_id => $self->book_id) },
+			'[Add author]'));
+}
+
+1;

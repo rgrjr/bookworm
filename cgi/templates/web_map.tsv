@@ -1,0 +1,15 @@
+modest_version	0.1, revision  4
+server_prefix	bookworm
+page	templates/web_map.tsv		
+page	index.cgi	Home	Home
+page	add-book.cgi	Add Book	Add
+page	add-book-author.cgi	Add Book Author	
+page	update-publisher.cgi	Add Publisher	Add
+page	update-author.cgi	Add Author	Add
+page	find-book.cgi	Find Book	Search
+page	find-author.cgi	Find Author	Search
+page	styles/cssmenu.css		
+page	styles/main.css		
+page	javascript/common.js		
+page	javascript/dialogs.js		
+page	javascript/newcssmenu.js		

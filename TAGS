@@ -1,0 +1,60 @@
+
+Bookworm/Author.pm,535
+package Bookworm::Author;10,145
+sub table_name Bookworm::Author::table_name19,315
+sub primary_key Bookworm::Author::primary_key20,344
+sub pretty_name Bookworm::Author::pretty_name22,378
+sub home_page_name Bookworm::Author::home_page_name23,422
+sub books Bookworm::Author::books25,467
+sub validate Bookworm::Author::validate53,1131
+sub author_name Bookworm::Author::author_name61,1330
+sub local_display_fields Bookworm::Author::local_display_fields88,1995
+sub post_web_update Bookworm::Author::post_web_update96,2238
+
+Bookworm/Base.pm,205
+package Bookworm::Base;12,212
+sub connect_to_database Bookworm::Base::connect_to_database16,270
+sub home_page_url Bookworm::Base::home_page_url24,508
+sub web_search Bookworm::Base::web_search33,715
+
+Bookworm/Book.pm,751
+package Bookworm::Book;10,141
+sub table_name Bookworm::Book::table_name20,346
+sub primary_key Bookworm::Book::primary_key21,373
+    sub web_add_author;Bookworm::Book::web_add_author24,424
+sub pretty_name Bookworm::Book::pretty_name26,449
+sub home_page_name Bookworm::Book::home_page_name27,487
+sub authors Bookworm::Book::authors29,527
+sub validate Bookworm::Book::validate55,1121
+sub format_authors_field Bookworm::Book::format_authors_field64,1334
+sub local_display_fields Bookworm::Book::local_display_fields96,2415
+sub default_search_fields Bookworm::Book::default_search_fields98,2473
+sub default_display_columns Bookworm::Book::default_display_columns109,2733
+sub post_web_update Bookworm::Book::post_web_update116,2978
+
+Bookworm/Book/web_add_author.pm,87
+package Bookworm::Book;7,122
+sub web_add_author Bookworm::Book::web_add_author9,147
+
+Bookworm/Publisher.pm,394
+package Bookworm::Publisher;10,151
+sub table_name Bookworm::Publisher::table_name19,324
+sub primary_key Bookworm::Publisher::primary_key20,356
+sub pretty_name Bookworm::Publisher::pretty_name25,434
+sub home_page_name Bookworm::Publisher::home_page_name26,481
+sub validate Bookworm::Publisher::validate28,529
+sub local_display_fields Bookworm::Publisher::local_display_fields43,926
+
+cgi/update-publisher.cgi,0
+
+cgi/update-author.cgi,0
+
+cgi/index.cgi,0
+
+cgi/find-book.cgi,0
+
+cgi/find-author.cgi,0
+
+cgi/add-book.cgi,0
+
+cgi/add-book-author.cgi,0
