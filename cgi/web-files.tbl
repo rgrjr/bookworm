@@ -1,4 +1,4 @@
-templates/web_map.tsv	prod	csv
+web_map.tsv	prod	csv
 index.cgi	prod	cgi	Home	Home
 add-book.cgi	prod	cgi	Add Book	Add
 add-book-author.cgi	prod	cgi	Add Book Author
@@ -6,3 +6,7 @@ update-publisher.cgi	prod	cgi	Add Publisher	Add
 update-author.cgi	prod	cgi	Add Author	Add
 find-book.cgi	prod	cgi	Find Book	Search
 find-author.cgi	prod	cgi	Find Author	Search
+styles/cssmenu.css	prod	css
+styles/main.css	prod	css
+javascript/modest.js	prod	javascript
+javascript/newcssmenu.js	prod	javascript

@@ -7,7 +7,6 @@ modest-dir = /shared.local/mgi/modest
 MODEST = perl -Mlib=${modest-dir} ${modest-dir}/
 # Web file database
 web-database = cgi/web-files.tbl
-web-import-database = cgi/imported-web-files.tbl
 # server-prefix is the server-root relative URL path, which is used to construct
 # links, such as href="/${server-prefix}/projects/project.cgi"
 server-prefix = bookworm
@@ -25,12 +24,10 @@ install:	install-web
 
 # Build options for maintain-cgi.pl
 MAINTAIN-WEB-OPTS = --cgi-root=${bookworm-path} \
-	--script-database=${web-database} --script-directory=cgi \
+	--script-database=${web-database} \
+	--script-directory=cgi --script-directory=${modest-dir}/public_html \
 	--hacked-include=`cd ${modest-dir} && pwd`
-IMPORT-WEB-OPTS = --cgi-root=${bookworm-path} \
-	--script-database=${web-import-database} \
-	--script-directory=${modest-dir}/public_html
-check-web-dirs:	cgi/templates/web_map.tsv
+check-web-dirs:	cgi/web_map.tsv
 	test -d "${bookworm-path}" && test -w "${bookworm-path}"
 # Try to make this robust about whether we have an SVN client.
 revision.text:		makefile .
@@ -38,15 +35,20 @@ revision.text:		makefile .
 	if [ -d .svn ]; then  \
 	    echo ', revision ' `svnversion` >> $@; \
 	fi
-cgi/templates/web_map.tsv:	${web-database} revision.text
-	cat ${web-database} ${web-import-database} > $@.tmp
-	${MODEST}make-navmap.pl --site-layout $@.tmp \
-		--modest-version "`cat revision.text`" \
-		--base-url ${server-prefix} > $@
-	rm -f $@.tmp
+# Create the Web map from web-files.tbl.
+transform_navmap = \
+	'chomp; \
+	 my ($$script, $$status, $$type, $$page_name, $$menu) = split("\t"); \
+	 print join("\t", "page", $$script, $$page_name, $$menu || ""), "\n";'
+cgi/web_map.tsv:	${web-database}
+	echo -n 'modest_version	' > $@.tmp
+	echo -n '${RELEASE}' >> $@.tmp
+	echo >> $@.tmp
+	echo "server_prefix	${server-prefix}" >> $@.tmp
+	perl -ne ${transform_navmap} < ${web-database} >> $@.tmp
+	mv $@.tmp $@
 install-web:	check-web-dirs
 	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='install'
-	${MODEST}maintain-cgi.pl ${IMPORT-WEB-OPTS} --oper='install'
 # Maintenance tools, intended for development.
 cmp-web:
 	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=cmp
@@ -63,4 +65,4 @@ wc:
 	${FIND-SOURCES} | xargs wc
 
 clean:
-	rm -f revision.text cgi/templates/web_map.tsv
+	rm -f revision.text cgi/web_map.tsv
