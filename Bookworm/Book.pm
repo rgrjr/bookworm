@@ -65,7 +65,11 @@ sub format_authors_field {
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
     if ($value && ref($value) && @$value) {
-	return join(' ', map { $_->html_link($q); } @$value);
+	return join(' ', map {
+	    my $id = $_->author_id;
+	    ($_->html_link($q)
+	     . qq{<input type="hidden" name="author_id" value="$id">});
+		    } @$value);
     }
     else {
 	return 'none';
@@ -75,7 +79,7 @@ sub format_authors_field {
 my @field_descriptors
     = ({ accessor => 'book_id', verbosity => 2 },
        { accessor => 'title', pretty_name => 'Title',
-	 type => 'string' },
+	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
 	 type => 'authors' },
        { accessor => 'publisher_id', pretty_name => 'Publisher',
@@ -87,7 +91,7 @@ my @field_descriptors
 	 type => 'enumeration',
 	 values => [ qw(fiction sf history biography text nonfiction) ] },
        { accessor => 'notes', pretty_name => 'Notes',
-	 type => 'string' },
+	 type => 'text' },
        { accessor => 'location_id', pretty_name => 'Location'
 	 # type => 'foreign_key', class => 'Bookworm::Location'
        }
@@ -113,13 +117,35 @@ sub default_display_columns {
 	     qw(publisher_id publication_year category notes location_id) ];
 }
 
+sub web_update {
+    my ($self, $q) = @_;
+
+    my @authors = $q->param('author_id');
+    if (@authors) {
+	# [total hack.  -- rgr, 25-May-13.]
+	require Bookworm::Author;
+	$self->authors([ map { Bookworm::Author->fetch($_); } @authors ]);
+    }
+    $self->SUPER::web_update($q);
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
 
-    return $q->ul(map { $q->li($_); }
-		  $q->a({ href => $q->oligo_query('add-book-author.cgi',
-						  book_id => $self->book_id) },
-			'[Add author]'));
+    my @links;
+    my $similar_book_link
+	= $q->oligo_query('add-book.cgi',
+			  (map { ($_ => $self->$_());
+			   } qw(publisher_id publication_year category)),
+			  (map { (author_id => $_->author_id);
+			   } @{$self->authors}));
+    push(@links,
+	 $q->a({ href => $similar_book_link }, '[Add similar book]'));
+    push(@links,
+	 $q->a({ href => $q->oligo_query('add-book-author.cgi',
+					 book_id => $self->book_id) },
+	       '[Add author]'));
+    return $q->ul(map { $q->li($_); } @links);
 }
 
 1;
