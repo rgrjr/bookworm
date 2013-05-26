@@ -51,3 +51,8 @@ create table publisher (
   primary key (publisher_id),
   unique key (publisher_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--- Constant data.
+
+insert into location (name, description)
+    values ('home', '50 Foster St.');
