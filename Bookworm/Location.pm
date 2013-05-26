@@ -17,13 +17,19 @@ BEGIN {
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
     Bookworm::Location->build_set_fetch_accessor
-	('children',
-	 query => q{select location_id
-		    from location
+	('location_children',
+	 query => q{select location_id from location
 		    where parent_location_id = ?
 		    order by location_id},
 	 object_class => 'Bookworm::Location',
-	 cache_key => '_children');
+	 cache_key => '_location_children');
+    Bookworm::Location->build_set_fetch_accessor
+	('book_children',
+	 query => q{select book_id from book
+		    where location_id = ?
+		    order by book_id},
+	 object_class => 'Bookworm::Book',
+	 cache_key => '_book_children');
 }
 
 sub table_name { 'location'; }
@@ -103,9 +109,16 @@ sub post_web_update {
     return join("\n",
 		$q->h3("$unlink contents"),
 		$self->present_object_content
-		       ($q, $unlink,
+		       ($q, "$unlink locations",
 			[ qw(name description parent_location_id) ],
-			$self->children),
+			$self->location_children),
+		"\n<br>\n",
+		$self->present_object_content
+		       ($q, "$unlink books",
+			[ { accessor => 'title', pretty_name => 'Title',
+			    type => 'self_link' },
+			  qw(authors notes) ],
+			$self->book_children),
 		"\n");
 }
 
