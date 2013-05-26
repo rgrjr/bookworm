@@ -30,6 +30,25 @@ sub home_page_url {
 	if $id;
 }
 
+sub format_location_chain_field {
+    # Produces a hierarchical link to the container the ID for which is given in
+    # $value.  Used to display and link to parent containers in Web display.
+    my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
+    require Bookworm::Location;
+
+    my $spew = '';
+    my $ancestor_id = $value;
+    while ($ancestor_id) {
+	my $ancestor = Bookworm::Location->fetch($ancestor_id);
+	last
+	    unless $ancestor;
+	my $link = $ancestor->html_link($q);
+	$spew = ($spew ? "$link &gt;&gt; $spew" : $link);
+	$ancestor_id = $ancestor->parent_location_id;
+    }
+    return $spew || 'none';
+}
+
 sub web_search {
     my ($class, $q, @options) = @_;
     my %options = @options;

@@ -92,9 +92,9 @@ my @field_descriptors
 	 values => [ qw(fiction sf history biography text nonfiction) ] },
        { accessor => 'notes', pretty_name => 'Notes',
 	 type => 'text' },
-       { accessor => 'location_id', pretty_name => 'Location'
-	 # type => 'foreign_key', class => 'Bookworm::Location'
-       }
+       { accessor => 'location_id', pretty_name => 'Location',
+	 edit_p => 'find-location.cgi',
+	 type => 'location_chain' }
     );
 
 sub local_display_fields { return \@field_descriptors };
@@ -136,7 +136,8 @@ sub post_web_update {
     my $similar_book_link
 	= $q->oligo_query('add-book.cgi',
 			  (map { ($_ => $self->$_());
-			   } qw(publisher_id publication_year category)),
+			   } qw(publisher_id publication_year
+				category location_id)),
 			  (map { (author_id => $_->author_id);
 			   } @{$self->authors}));
     push(@links,
