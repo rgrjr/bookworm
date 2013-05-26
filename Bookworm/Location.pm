@@ -111,33 +111,26 @@ sub post_web_update {
 
 ### Searching.
 
-my $search_fields
-    = [ { accessor => 'name',
-	  pretty_name => 'Location name',
-	  search_type => 'string',
-	  search_id => 'location_id' },
-	{ accessor => 'description',
-	  pretty_name => 'Description',
-	  search_type => 'name' },
-	{ accessor => 'limit',
-	  search_type => 'limit',
-	  pretty_name => 'Max locations to show',
-	  default => 100 }
-    ];
+sub default_search_fields {
+    return [ { accessor => 'name',
+	       pretty_name => 'Location name',
+	       search_type => 'string',
+	       search_id => 'location_id' },
+	     { accessor => 'description',
+	       pretty_name => 'Description',
+	       search_type => 'name' },
+	     { accessor => 'limit',
+	       search_type => 'limit',
+	       pretty_name => 'Max locations to show',
+	       default => 100 }
+	];
+}
 
-my $location_display_columns
-    = [ { accessor => 'name', pretty_name => 'Location',
-	  type => 'return_address_link' },
-	qw(description parent_location_id) ];
-
-sub web_search {
-    my ($class, $q, @options) = @_;
-
-    $class->SUPER::web_search($q,
-			      columns => $location_display_columns,
-			      search_fields => $search_fields,
-			      create_new_page => 'location.cgi',
-			      @options);
+sub default_display_columns {
+    return [ { accessor => 'name', pretty_name => 'Location',
+	       type => 'return_address_link',
+	       return_address => 'location.cgi' },
+	     qw(description parent_location_id) ];
 }
 
 1;
