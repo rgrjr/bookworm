@@ -96,9 +96,16 @@ my $book_columns
 sub post_web_update {
     my ($self, $q) = @_;
 
+    my @stuff;
+    my $author_book_link
+	= $q->oligo_query('add-book.cgi',
+			  author_id => $self->author_id);
+    push(@stuff,
+	 $q->a({ href => $author_book_link }, '[Add book]'));
     my $books = $self->books;
-    $self->present_object_content($q, 'Books by this author',
-				  $book_columns, $books);
+    join("\n", $q->ul(map { $q->li($_); } @stuff),
+	 $self->present_object_content($q, 'Books by this author',
+				       $book_columns, $books));
 }
 
 1;
