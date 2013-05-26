@@ -107,7 +107,11 @@ sub default_search_fields {
 		search_type => 'string',
 		search_id => 'book_id',
 		search_field => 'title' },
-	     qw(publisher_id publication_year category notes) ];
+	     qw(publication_year category notes),
+	     { accessor => 'limit',
+	       search_type => 'limit',
+	       pretty_name => 'Max books to show',
+	       default => 100 } ];
 }
 
 sub default_display_columns {
