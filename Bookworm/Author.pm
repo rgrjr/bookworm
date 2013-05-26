@@ -82,7 +82,7 @@ my @field_descriptors
        { accessor => 'last_name', pretty_name => 'Last name',
 	 type => 'string' },
        { accessor => 'notes', pretty_name => 'Notes',
-	 type => 'string' }
+	 type => 'text' }
     );
 
 sub local_display_fields { return \@field_descriptors };
