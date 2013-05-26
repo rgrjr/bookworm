@@ -153,4 +153,35 @@ sub post_web_update {
     return $q->ul(map { $q->li($_); } @links);
 }
 
+### Database plumbing.
+
+sub _update_author_data {
+    # If we have an "authors" arrrayref, update book_author_map to match.
+    my ($self, $dbh) = @_;
+
+    my $authors = $self->{_authors};
+    return
+	# Must not have changed.
+	unless $authors;
+    my $book_id = $self->book_id || die;
+    $dbh->do(q{delete from book_author_map
+	       where book_id = ?},
+	     undef, $book_id)
+	or die $dbh->errstr;
+    for my $author (@$authors) {
+	$dbh->do(q{insert into book_author_map (book_id, author_id)
+		   values (?, ?)},
+		 undef, $book_id, $author->author_id)
+	    or die $dbh->errstr;
+    }
+}
+
+sub insert {
+    my ($self, $dbh) = @_;
+
+    $self->SUPER::insert($dbh);
+    $self->_update_author_data($dbh);
+    return $self;
+}
+
 1;
