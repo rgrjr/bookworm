@@ -7,6 +7,7 @@ update-author.cgi	prod	cgi	Add Author	Add
 find-book.cgi	prod	cgi	Find Book	Search
 find-author.cgi	prod	cgi	Find Author	Search
 find-location.cgi	prod	cgi	Find Location	Search
+find-publisher.cgi	prod	cgi	Find Publisher	Search
 styles/cssmenu.css	prod	css
 styles/main.css	prod	css
 javascript/modest.js	prod	javascript

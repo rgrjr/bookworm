@@ -84,7 +84,7 @@ my @field_descriptors
 	 type => 'authors' },
        { accessor => 'publisher_id', pretty_name => 'Publisher',
 	 type => 'foreign_key', class => 'Bookworm::Publisher',
-	 edit_p => 'update-publisher.cgi' },
+	 edit_p => 'find-publisher.cgi' },
        { accessor => 'publication_year', pretty_name => 'Year',
 	 type => 'string' },
        { accessor => 'category', pretty_name => 'Category',
