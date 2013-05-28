@@ -12,4 +12,5 @@ styles/cssmenu.css	prod	css
 styles/main.css	prod	css
 javascript/modest.js	prod	javascript
 javascript/newcssmenu.js	prod	javascript
+javascript/update-content.js	prod	javascript
 location.cgi	prod	cgi	Location Home
