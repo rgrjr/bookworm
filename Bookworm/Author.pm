@@ -91,7 +91,7 @@ my $book_columns
     = [ { accessor => 'title', pretty_name => 'Book',
 	  type => 'return_address_link',
 	  return_address => 'add-book.cgi' },
-	qw(publication_year category notes) ];
+	qw(publication_year category notes location_id) ];
 
 sub post_web_update {
     my ($self, $q) = @_;

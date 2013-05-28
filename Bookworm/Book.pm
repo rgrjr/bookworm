@@ -94,7 +94,7 @@ my @field_descriptors
 	 type => 'text' },
        { accessor => 'location_id', pretty_name => 'Location',
 	 edit_p => 'find-location.cgi',
-	 type => 'location_chain' }
+	 type => 'foreign_key', class => 'Bookworm::Location' }
     );
 
 sub local_display_fields { return \@field_descriptors };
