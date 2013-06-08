@@ -90,7 +90,9 @@ sub web_search {
 	}
 	push(@options, search_fields => $search_fields);
     }
-    return $class->SUPER::web_search($q, @options);
+    return $class->SUPER::web_search($q,
+				     create_new_page => $class->home_page_name,
+				     @options);
 }
 
 1;
