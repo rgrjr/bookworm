@@ -35,7 +35,7 @@ sub validate {
 my @field_descriptors
     = ({ accessor => 'publisher_id', verbosity => 2 },
        { accessor => 'publisher_name', pretty_name => 'Publisher',
-	 type => 'string', size => 50 },
+	 type => 'string', size => 50, default_sort => 'asc' },
        { accessor => 'publisher_city', pretty_name => 'City',
 	 type => 'string', size => 50 }
     );

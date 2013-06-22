@@ -80,7 +80,7 @@ my @field_descriptors
        { accessor => 'mid_name', pretty_name => 'Middle name',
 	 type => 'string' },
        { accessor => 'last_name', pretty_name => 'Last name',
-	 type => 'string' },
+	 type => 'string', default_sort => 'asc' },
        { accessor => 'notes', pretty_name => 'Notes',
 	 type => 'text' }
     );
