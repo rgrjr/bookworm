@@ -74,7 +74,7 @@ sub author_name {
 }
 
 my @field_descriptors
-    = ({ accessor => 'author_id', verbosity => 2 },
+    = ({ accessor => 'author_id', pretty_name => 'Author', verbosity => 2 },
        { accessor => 'first_name', pretty_name => 'First name',
 	 type => 'string' },
        { accessor => 'mid_name', pretty_name => 'Middle name',
@@ -86,6 +86,13 @@ my @field_descriptors
     );
 
 sub local_display_fields { return \@field_descriptors };
+
+sub default_display_columns {
+    return [ { accessor => 'author_id', pretty_name => 'Author',
+	       type => 'return_address_link',
+	       return_address => 'update-author.cgi' },
+	     qw(notes) ];
+}
 
 my $book_columns
     = [ { accessor => 'title', pretty_name => 'Book',
