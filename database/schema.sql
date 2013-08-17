@@ -25,6 +25,7 @@ create table book (
   publisher_id int(11) default null,
   publication_year varchar(4),
   category enum('fiction', 'sf', 'history', 'biography', 'text', 'nonfiction'),
+  date_read varchar(100) NOT NULL default '',
   notes varchar(4000) default '',
   location_id int(11) default NULL,
   primary key (book_id)

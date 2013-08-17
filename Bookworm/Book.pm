@@ -14,7 +14,7 @@ use base qw(Bookworm::Base);
 BEGIN {
     Bookworm::Book->build_field_accessors
 	([ qw(book_id title publisher_id publication_year
-              category notes location_id) ]);
+              category date_read notes location_id) ]);
 }
 
 sub table_name { 'book'; }
@@ -90,6 +90,8 @@ my @field_descriptors
        { accessor => 'category', pretty_name => 'Category',
 	 type => 'enumeration',
 	 values => [ qw(fiction sf history biography text nonfiction) ] },
+       { accessor => 'date_read', pretty_name => 'Date read',
+	 type => 'string' }, 
        { accessor => 'notes', pretty_name => 'Notes',
 	 type => 'text' },
        { accessor => 'location_id', pretty_name => 'Location',
@@ -117,8 +119,10 @@ sub default_search_fields {
 sub default_display_columns {
     return [ { accessor => 'title', pretty_name => 'Book',
 	       type => 'return_address_link',
-	       return_address => 'add-book.cgi' },
-	     qw(publisher_id publication_year category notes location_id) ];
+	       return_address => 'add-book.cgi',
+	       default_sort => 'asc' },
+	     qw(authors category publication_year publisher_id
+		notes date_read location_id) ];
 }
 
 sub web_update {
