@@ -105,14 +105,21 @@ sub validate_parent_location_id {
 sub post_web_update {
     my ($self, $q) = @_;
 
+    my @links;
+    if ($self->location_id) {
+	my $url = $q->oligo_query('location.cgi',
+				  parent_location_id => $self->location_id);
+	push(@links, $q->a({ href => $url }, '[Add child location]'));
+    }
     my $unlink = $self->html_link(undef);
     return join("\n",
+		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
 		$self->present_object_content
 		       ($q, "$unlink locations",
 			[ qw(name description parent_location_id) ],
 			$self->location_children),
-		"\n<br>\n",
+		"<br>\n",
 		$self->present_object_content
 		       ($q, "$unlink books",
 			[ { accessor => 'title', pretty_name => 'Title',
