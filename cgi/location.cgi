@@ -9,8 +9,8 @@
 use strict;
 use warnings;
 
-use lib '/home/rogers/projects/bookworm'; ### debug ###
-use lib '/shared.local/mgi/modest'; ### hack ###
+use lib '.'; ### debug ###
+use lib '.'; ### hack ###
 
 use ModGen::CGI;
 use Bookworm::Location;
