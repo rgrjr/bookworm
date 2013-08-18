@@ -149,7 +149,8 @@ sub default_search_fields {
 sub default_display_columns {
     return [ { accessor => 'name', pretty_name => 'Location',
 	       type => 'return_address_link',
-	       return_address => 'location.cgi' },
+	       return_address => 'location.cgi',
+	       default_sort => 'asc' },
 	     qw(description parent_location_id) ];
 }
 
