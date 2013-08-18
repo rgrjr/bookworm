@@ -4,13 +4,14 @@ add-book.cgi	prod	cgi	Add Book	Add
 add-book-author.cgi	prod	cgi	Add Book Author
 update-publisher.cgi	prod	cgi	Add Publisher	Add
 update-author.cgi	prod	cgi	Add Author	Add
+location.cgi	prod	cgi	Add Location	Add
 find-book.cgi	prod	cgi	Find Book	Search
 find-author.cgi	prod	cgi	Find Author	Search
 find-location.cgi	prod	cgi	Find Location	Search
 find-publisher.cgi	prod	cgi	Find Publisher	Search
 styles/cssmenu.css	prod	css
 styles/main.css	prod	css
+ajax-last-chosen.cgi	prod	cgi	Last Chosen
 javascript/modest.js	prod	javascript
 javascript/newcssmenu.js	prod	javascript
 javascript/update-content.js	prod	javascript
-location.cgi	prod	cgi	Location Home

@@ -95,6 +95,19 @@ sub web_search {
 				     @options);
 }
 
+my %class_from_cookie_name
+    = (last_book => 'Bookworm::Book',
+       last_author => 'Bookworm::Author',
+       last_location => 'Bookworm::Location',
+       last_publisher => 'Bookworm::Publisher');
+
+sub class_from_cookie_name {
+    # For ajax_last_chosen.
+    my ($self, $cookie_name) = @_;
+
+    return $class_from_cookie_name{$cookie_name};
+}
+
 1;
 
 =for grins
