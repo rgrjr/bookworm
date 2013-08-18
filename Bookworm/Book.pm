@@ -145,7 +145,7 @@ sub post_web_update {
 	= $q->oligo_query('add-book.cgi',
 			  (map { ($_ => $self->$_());
 			   } qw(publisher_id publication_year
-				category location_id)),
+				category notes location_id)),
 			  (map { (author_id => $_->author_id);
 			   } @{$self->authors}));
     push(@links,
