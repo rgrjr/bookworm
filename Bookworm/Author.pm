@@ -14,6 +14,8 @@ use base qw(Bookworm::Base);
 BEGIN {
     Bookworm::Author->build_field_accessors
 	([ qw(author_id first_name mid_name last_name notes) ]);
+    # These are created during search.
+    Bookworm::Author->define_class_slots(qw(author_sort_name n_books));
 }
 
 sub table_name { 'author'; }
@@ -88,10 +90,35 @@ my @field_descriptors
 sub local_display_fields { return \@field_descriptors };
 
 sub default_display_columns {
-    return [ { accessor => 'author_id', pretty_name => 'Author',
+    return [ { accessor => 'author_sort_name', pretty_name => 'Author name',
 	       type => 'return_address_link',
-	       return_address => 'update-author.cgi' },
+	       return_address => 'update-author.cgi',
+	       order_by => '_author_sort_name' },
+	     { accessor => 'n_books', pretty_name => '# books',
+	       order_by => '_n_books' },
 	     qw(notes) ];
+}
+
+my $web_search_base_query
+    = q{select author.*, 
+	       concat(last_name, ', ', first_name, ' ', mid_name)
+		   as _author_sort_name,
+	       count(bam.author_id) as _n_books
+	from author
+	     left join book_author_map as bam
+		  on bam.author_id = author.author_id};
+
+sub web_search {
+    # Add "left join" & "group by" so we can count books.  This must be a left
+    # join so we include authors without books (yet).
+    my ($class, $q, @options) = @_;
+
+    $q->verbose_p(2);
+    return $class->SUPER::web_search
+	($q,
+	 base_query => $web_search_base_query,
+	 extra_clauses => 'group by author.author_id',
+	 @options);
 }
 
 my $book_columns
