@@ -89,6 +89,13 @@ my @field_descriptors
 
 sub local_display_fields { return \@field_descriptors };
 
+sub default_search_fields {
+    return [ { accessor => 'last_name', pretty_name => 'Author name',
+	       type => 'string',
+	       search_field => [ qw(first_name mid_name last_name) ] },
+	     'notes' ];
+}
+
 sub default_display_columns {
     return [ { accessor => 'author_sort_name', pretty_name => 'Author name',
 	       type => 'return_address_link',
@@ -113,7 +120,6 @@ sub web_search {
     # join so we include authors without books (yet).
     my ($class, $q, @options) = @_;
 
-    $q->verbose_p(2);
     return $class->SUPER::web_search
 	($q,
 	 base_query => $web_search_base_query,
