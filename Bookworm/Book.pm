@@ -81,7 +81,7 @@ my @field_descriptors
        { accessor => 'title', pretty_name => 'Title',
 	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
-	 type => 'authors' },
+	 type => 'authors', order_by => '_sortable_authors' },
        { accessor => 'publisher_id', pretty_name => 'Publisher',
 	 type => 'foreign_key', class => 'Bookworm::Publisher',
 	 edit_p => 'find-publisher.cgi' },
@@ -123,6 +123,27 @@ sub default_display_columns {
 	       default_sort => 'asc' },
 	     qw(authors category publication_year publisher_id
 		notes date_read location_id) ];
+}
+
+my $web_search_base_query
+    = q{select book.*,
+	       group_concat(last_name separator ', ') as _sortable_authors
+	from book
+	     join book_author_map as bam
+		  on bam.book_id = book.book_id
+	     join author
+		  on author.author_id = bam.author_id};
+
+sub web_search {
+    # Tweak the result columns so we can sort by authors.
+    my ($class, $q, @options) = @_;
+    my %options = @options;
+
+    return $class->SUPER::web_search($q,
+				     base_query => $web_search_base_query,
+				     extra_clauses => 'group by book.book_id',
+				     create_new_page => $class->home_page_name,
+				     @options);
 }
 
 sub web_update {
