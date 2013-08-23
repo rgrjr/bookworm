@@ -104,11 +104,14 @@ sub local_display_fields { return \@field_descriptors };
 sub default_search_fields {
     my ($class) = @_;
 
-    return [ {  accessor => 'title',
-		pretty_name => 'Title/ID',
-		search_type => 'string',
-		search_id => 'book_id',
-		search_field => 'title' },
+    return [ { accessor => 'title',
+	       pretty_name => 'Title/ID',
+	       search_type => 'string',
+	       search_id => 'book_id',
+	       search_field => 'title' },
+	     { accessor => 'last_name', pretty_name => 'Authors',
+	       type => 'text',
+	       search_field => [ qw(first_name mid_name last_name) ] },
 	     qw(publication_year category notes),
 	     { accessor => 'limit',
 	       search_type => 'limit',
