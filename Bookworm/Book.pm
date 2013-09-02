@@ -15,6 +15,8 @@ BEGIN {
     Bookworm::Book->build_field_accessors
 	([ qw(book_id title publisher_id publication_year
               category date_read notes location_id) ]);
+    Bookworm::Book->build_fetch_accessor
+	(qw(location location_id Bookworm::Location));
 }
 
 sub table_name { 'book'; }

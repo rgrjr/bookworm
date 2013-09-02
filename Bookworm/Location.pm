@@ -110,6 +110,9 @@ sub post_web_update {
 	my $url = $q->oligo_query('location.cgi',
 				  parent_location_id => $self->location_id);
 	push(@links, $q->a({ href => $url }, '[Add child location]'));
+	$url = $q->oligo_query('move-books.cgi',
+			       location_id => $self->location_id);
+	push(@links, $q->a({ href => $url }, '[Move book(s) here]'));
     }
     my $unlink = $self->html_link(undef);
     return join("\n",
@@ -127,6 +130,71 @@ sub post_web_update {
 			  qw(authors notes) ],
 			$self->book_children),
 		"\n");
+}
+
+sub web_move_books {
+    my ($self, $q) = @_;
+    require Bookworm::Book;
+
+    my @books = map {
+	my $book = Bookworm::Book->fetch($_);
+	$book ? ($book) : ();
+    } $q->param('book_id');
+    my $return_address
+	= $q->param('return_address') || $self->home_page_url($q);
+    my $location_id = $self->location_id;
+    my $doit = $q->param('doit') || '';
+    my $error_message;
+    if ($doit eq 'Skip') {
+	print $q->redirect($return_address);
+	return;
+    }
+    elsif (! @books) {
+	# Need to find some books.
+	my $return = $q->modified_self_url();
+	my $search_url = $q->oligo_query('find-book.cgi',
+					 return_address => $return,
+					 multiple_p => 1);
+	print $q->redirect($search_url);
+	return;
+    }
+    elsif ($doit eq 'Move') {
+	# Move the books and redirect.
+	my $dbh = $books[0]->db_connection;
+	$dbh->begin_work();
+	for my $book (@books) {
+	    $book->location_id($location_id);
+	    $book->update($dbh);
+	    $error_message = 'Oops:  ' . $dbh->errstr, last
+		if $dbh->errstr;
+	}
+	if (! $error_message) {
+	    $dbh->commit();
+	    print $q->redirect($return_address);
+	    return;
+	}
+    }
+
+    # Show a confirmation page. 
+    $q->_header(title => 'Confirm move');
+    print($q->p($q->b($error_message)), "\n")
+	if $error_message;
+    print($q->h3("Move the following books to ", $self->html_link($q)),
+	  $q->start_form(), "\n",
+	  $q->hidden(location_id => $location_id),
+	  $q->hidden(book_id => $q->param('book_id')),
+	  "\n<ul>\n");
+    for my $book (@books) {
+	my $old_location = $book->location;
+	my $where = ($old_location
+		     ? ' in ' . $old_location->html_link($q)
+		     : '');
+	print($q->li($book->html_link($q), $where), "\n");
+    }
+    print("</ul>\n", $q->commit_button(doit => 'Move'), ' &nbsp; ',
+	  $q->submit(doit => 'Skip'),
+	  $q->end_form(), "\n");
+    $q->_footer();
 }
 
 ### Searching.
