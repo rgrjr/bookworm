@@ -102,8 +102,19 @@ sub validate_parent_location_id {
     }
 }
 
+sub contained_item_class {
+    return 'Bookworm::Book';
+}
+
+sub container_items {
+    my ($self) = @_;
+
+    return $self->book_children;
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
+    require ModGen::CGI::make_selection_op_buttons;
 
     my @links;
     if ($self->location_id) {
@@ -114,6 +125,7 @@ sub post_web_update {
 			       location_id => $self->location_id);
 	push(@links, $q->a({ href => $url }, '[Move book(s) here]'));
     }
+    $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
@@ -125,11 +137,59 @@ sub post_web_update {
 		"<br>\n",
 		$self->present_object_content
 		       ($q, "$unlink books",
-			[ { accessor => 'title', pretty_name => 'Title',
+			[ { accessor => 'book_id', pretty_name => 'Select?',
+			    type => 'checkbox', checked_p => 0, label => ' ' },
+			  { accessor => 'title', pretty_name => 'Title',
 			    type => 'self_link' },
 			  qw(authors notes) ],
 			$self->book_children),
+		$q->make_selection_op_buttons(commit => 0, 'Move books'),
 		"\n");
+}
+
+sub web_update {
+    my ($self, $q, @options) = @_;
+
+    my $message;
+    my $doit = $q->param('doit') || '';
+    if ($self->handle_container_selection($q)) {
+	# Already done.
+    }
+    elsif (! $doit) {
+    }
+    elsif ($doit eq 'confirm_move' || $doit eq 'Move') {
+	$message = $self->move_or_delete_items($q);
+	return
+	    unless $message;
+    }
+    elsif ($doit ne 'Move books') {
+    }
+    elsif (my @items = $q->param('book_id')) {
+	# Go look for a new folder.
+	my $n_items = scalar(@items);
+	my $return_url = $q->oligo_query('location.cgi',
+					 location_id => $self->location_id,
+					 (map { (book_id => $_);
+					  } $q->param('book_id')),
+					 doit => 'confirm_move');
+	my $title = join('', "New location for $n_items ", $self->name,
+			 ' book', $self->pluralize($n_items));
+	my $search_url
+	    = $q->oligo_query('find-location.cgi',
+			      title => $title,
+			      return_field => 'destination_container_id',
+			      return_address => $return_url);
+	print $q->redirect(-uri => $search_url);
+	return;
+    }
+    else {
+	$message = 'No items selected.';
+    }
+    $q->param(message => $message)
+	if $message;
+    $self->SUPER::web_update
+	($q, @options,
+	 onsubmit => 'return submit_or_operate_on_selected(event)');
 }
 
 sub web_move_books {
@@ -173,6 +233,7 @@ sub web_move_books {
 	    print $q->redirect($return_address);
 	    return;
 	}
+	$dbh->rollback();
     }
 
     # Show a confirmation page. 

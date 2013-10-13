@@ -28,6 +28,8 @@ sub primary_key { 'book_id'; }
 sub pretty_name { shift()->title(); }
 sub home_page_name { 'add-book.cgi'; }
 
+sub parent_id_field { 'location_id'; }
+
 sub authors {
     my ($self, @new_value) = @_;
 

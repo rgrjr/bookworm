@@ -15,4 +15,5 @@ styles/main.css	prod	css
 ajax-last-chosen.cgi	prod	cgi	Last Chosen
 javascript/modest.js	prod	javascript
 javascript/newcssmenu.js	prod	javascript
+javascript/selection.js	prod	javascript
 javascript/update-content.js	prod	javascript
