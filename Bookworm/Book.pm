@@ -30,6 +30,11 @@ sub home_page_name { 'add-book.cgi'; }
 
 sub parent_id_field { 'location_id'; }
 
+sub book_title {
+    # Synonym to avoid ambiguity in web_update.
+    shift->title(@_);
+}
+
 sub authors {
     my ($self, @new_value) = @_;
 
@@ -108,7 +113,7 @@ sub local_display_fields { return \@field_descriptors };
 sub default_search_fields {
     my ($class) = @_;
 
-    return [ { accessor => 'title',
+    return [ { accessor => 'book_title',
 	       pretty_name => 'Title/ID',
 	       search_type => 'string',
 	       search_id => 'book_id',
