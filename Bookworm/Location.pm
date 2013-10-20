@@ -36,6 +36,7 @@ sub table_name { 'location'; }
 sub primary_key { 'location_id'; }
 sub pretty_name { shift()->name; }
 sub home_page_name { 'location.cgi'; }
+sub search_page_name { 'find-location.cgi'; }
 
 sub ancestor_of {
     # Return true iff $self contains $location.

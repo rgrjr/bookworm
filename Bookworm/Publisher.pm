@@ -24,6 +24,7 @@ sub primary_key { 'publisher_id'; }
 
 sub pretty_name { shift()->publisher_name(); }
 sub home_page_name { 'update-publisher.cgi'; }
+sub search_page_name { 'find-publisher.cgi'; }
 
 sub validate {
     my ($self, $interface) = @_;

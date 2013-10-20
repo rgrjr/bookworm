@@ -30,6 +30,8 @@ sub home_page_name { 'add-book.cgi'; }
 
 sub parent_id_field { 'location_id'; }
 
+sub search_page_name { 'find-book.cgi'; }
+
 sub book_title {
     # Synonym to avoid ambiguity in web_update.
     shift->title(@_);

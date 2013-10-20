@@ -23,6 +23,7 @@ sub primary_key { 'author_id'; }
 
 sub pretty_name { shift()->author_name(); }
 sub home_page_name { 'update-author.cgi'; }
+sub search_page_name { 'find-author.cgi'; }
 
 sub books {
     my $self = shift;

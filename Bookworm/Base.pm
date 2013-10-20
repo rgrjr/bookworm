@@ -13,6 +13,9 @@ package Bookworm::Base;
 
 use base qw(ModGen::DB::Thing);
 
+# Autoloaded method.
+    sub web_home_page;
+
 sub connect_to_database {
     # [this is a kludge; we shouldn't need a ModGen::DB::Fetch here, which is
     # too MODEST-centric.  -- rgr, 30-Jan-11.]

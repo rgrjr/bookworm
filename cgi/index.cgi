@@ -4,11 +4,10 @@ use strict;
 use warnings;
 
 use lib '.'; ### debug ###
-use lib '../modest'; ### hack ###
+use lib '.'; ### hack ###
 
 use ModGen::CGI;
+use Bookworm::Base;
 
 my $q = ModGen::CGI->new();
-$q->_header(title => 'Bookworm home page');
-print($q->p('Not much to see here.'), "\n");
-$q->_footer();
+Bookworm::Base->web_home_page($q);
