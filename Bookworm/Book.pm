@@ -76,7 +76,7 @@ sub format_authors_field {
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
     if ($value && ref($value) && @$value) {
-	return join(' ', map {
+	return join(', ', map {
 	    my $id = $_->author_id;
 	    ($_->html_link($q)
 	     . qq{<input type="hidden" name="author_id" value="$id">});
@@ -100,7 +100,7 @@ my @field_descriptors
 	 type => 'string' },
        { accessor => 'category', pretty_name => 'Category',
 	 type => 'enumeration',
-	 values => [ qw(fiction sf history biography text nonfiction) ] },
+	 values => [ qw(fiction sf history biography satire text nonfiction) ] },
        { accessor => 'date_read', pretty_name => 'Date read',
 	 type => 'string' }, 
        { accessor => 'notes', pretty_name => 'Notes',
