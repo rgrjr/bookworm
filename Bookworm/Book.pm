@@ -73,14 +73,12 @@ sub validate {
 }
 
 sub format_authors_field {
+    # This is only used for search and location display, so it is always
+    # read-only.
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
     if ($value && ref($value) && @$value) {
-	return join(', ', map {
-	    my $id = $_->author_id;
-	    ($_->html_link($q)
-	     . qq{<input type="hidden" name="author_id" value="$id">});
-		    } @$value);
+	return join(', ', map { $_->html_link($q); } @$value);
     }
     else {
 	return 'none';
