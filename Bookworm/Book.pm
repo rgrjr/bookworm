@@ -123,7 +123,7 @@ sub default_search_fields {
 	     { accessor => 'last_name', pretty_name => 'Authors',
 	       type => 'text',
 	       search_field => [ qw(first_name mid_name last_name) ] },
-	     qw(publication_year category notes),
+	     qw(publication_year date_read category notes),
 	     { accessor => 'limit',
 	       search_type => 'limit',
 	       pretty_name => 'Max books to show',
