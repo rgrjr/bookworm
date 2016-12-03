@@ -27,7 +27,7 @@ BEGIN {
 	('book_children',
 	 query => q{select book_id from book
 		    where location_id = ?
-		    order by book_id},
+		    order by title},
 	 object_class => 'Bookworm::Book',
 	 cache_key => '_book_children');
 }
@@ -142,7 +142,7 @@ sub post_web_update {
 			    type => 'checkbox', checked_p => 0, label => ' ' },
 			  { accessor => 'title', pretty_name => 'Title',
 			    type => 'self_link' },
-			  qw(authors notes) ],
+			  qw(authors category notes) ],
 			$self->book_children),
 		$q->make_selection_op_buttons(commit => 0, 'Move books'),
 		"\n");
@@ -162,6 +162,7 @@ sub web_update {
 	$message = $self->move_or_delete_items($q);
 	return
 	    unless $message;
+	$q->delete('book_id');
     }
     elsif ($doit ne 'Move books') {
     }
