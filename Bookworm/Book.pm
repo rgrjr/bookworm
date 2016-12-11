@@ -78,7 +78,16 @@ sub format_authors_field {
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
     if ($value && ref($value) && @$value) {
-	return join(', ', map { $_->html_link($q); } @$value);
+	return join(', ', map {
+	    my $author = $_;
+	    my $id = $author->author_id;
+	    join('',
+		 $author->html_link($q),
+		 $self->book_id ? ()
+		 # If the book hasn't been added, then we have to remember the
+		 # author(s) in the form.
+		 : qq{<input name="author_id" type="hidden" value="$id" />});
+		    } @$value);
     }
     else {
 	return 'none';
