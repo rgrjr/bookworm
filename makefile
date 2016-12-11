@@ -3,7 +3,7 @@
 # $Id: makefile 283 2010-11-30 18:19:30Z rogers $
 
 # install tools
-modest-dir = /shared.local/mgi/modest
+modest-dir = /scratch/rogers/modest
 MODEST = perl -Mlib=${modest-dir} ${modest-dir}/
 # Web file database
 web-database = cgi/web-files.tbl
@@ -26,6 +26,7 @@ install:	install-web
 MAINTAIN-WEB-OPTS = --cgi-root=${bookworm-path} \
 	--script-database=${web-database} \
 	--script-directory=cgi --script-directory=${modest-dir}/public_html \
+	--production-include=`pwd` \
 	--hacked-include=`cd ${modest-dir} && pwd`
 check-web-dirs:	cgi/web_map.tsv
 	test -d "${bookworm-path}" && test -w "${bookworm-path}"
