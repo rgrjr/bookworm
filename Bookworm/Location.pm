@@ -103,8 +103,12 @@ sub validate_parent_location_id {
     }
 }
 
-sub contained_item_class {
-    return 'Bookworm::Book';
+sub contained_item_key {
+    return 'book_id';
+}
+
+sub contained_item_parent_key {
+    return 'location_id';
 }
 
 sub container_items {
