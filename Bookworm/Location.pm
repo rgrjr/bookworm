@@ -136,8 +136,7 @@ sub post_web_update {
 		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
 		$self->present_object_content
-		       ($q, "$unlink locations",
-			[ qw(name description parent_location_id) ],
+		       ($q, "$unlink locations", [ qw(name description) ],
 			$self->location_children),
 		"<br>\n",
 		$self->present_object_content
