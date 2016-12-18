@@ -146,7 +146,7 @@ sub post_web_update {
 			    type => 'checkbox', checked_p => 0, label => ' ' },
 			  { accessor => 'title', pretty_name => 'Title',
 			    type => 'self_link' },
-			  qw(authors category notes) ],
+			  qw(publication_year authors category notes) ],
 			$self->book_children),
 		$q->make_selection_op_buttons(commit => 0, 'Move books'),
 		"\n");
