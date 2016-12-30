@@ -132,13 +132,16 @@ sub post_web_update {
     }
     $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
+    my $child_locations = $self->location_children;
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
-		$self->present_object_content
+		(@$child_locations
+		 ? ($self->present_object_content
 		       ($q, "$unlink locations", [ qw(name description) ],
-			$self->location_children),
-		"<br>\n",
+			$child_locations)
+		    . "<br>\n")
+		 : ''),
 		$self->present_object_content
 		       ($q, "$unlink books",
 			[ { accessor => 'book_id', pretty_name => 'Select?',
