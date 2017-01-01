@@ -20,7 +20,7 @@ BEGIN {
 	('location_children',
 	 query => q{select location_id from location
 		    where parent_location_id = ?
-		    order by location_id},
+		    order by name},
 	 object_class => 'Bookworm::Location',
 	 cache_key => '_location_children');
     Bookworm::Location->build_set_fetch_accessor
