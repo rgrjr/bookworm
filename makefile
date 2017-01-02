@@ -1,6 +1,7 @@
 # Installation and (some day) testing of Bookworm.
 #
-# $Id: makefile 283 2010-11-30 18:19:30Z rogers $
+# [created ("Initial import from lost repo").  -- rgr, 25-May-13.]
+#
 
 # install tools
 modest-dir = /scratch/rogers/modest
