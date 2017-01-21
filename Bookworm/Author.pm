@@ -56,9 +56,8 @@ sub books {
 sub validate {
     my ($self, $interface) = @_;
 
-    $interface->_error('Authors must have (at least) ',
-		       "a first name and a last name.\n")
-	unless $self->first_name && $self->last_name;
+    $interface->_error("Authors must have at least a last name.\n")
+	unless $self->last_name;
 }
 
 sub author_name {
