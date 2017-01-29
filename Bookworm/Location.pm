@@ -117,6 +117,25 @@ sub container_items {
     return $self->book_children;
 }
 
+sub children {
+    # Hierarchy browser support.
+    return shift()->location_children(@_);
+}
+
+sub sorted_children {
+    # Hierarchy browser support.
+    my ($self) = @_;
+
+    return @{$self->location_children()};
+}
+
+sub fetch_root {
+    # Hierarchy browser support.
+    my ($class) = @_;
+
+    return $class->fetch('Somewhere', key => 'name');
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
     require ModGen::CGI::make_selection_op_buttons;
