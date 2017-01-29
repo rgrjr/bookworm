@@ -1,0 +1,7 @@
+*~
+.#*
+*#
+*.patch
+*.tmp
+TAGS
+cgi/web_map.tsv
