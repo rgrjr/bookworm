@@ -168,6 +168,7 @@ sub web_update {
 	$message = $self->move_or_delete_items($q);
 	return
 	    unless $message;
+	delete($self->{_book_children});	# decache.
 	$q->delete('book_id');
     }
     elsif ($doit ne 'Move books') {
