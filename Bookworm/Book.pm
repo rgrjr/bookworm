@@ -112,7 +112,7 @@ my @field_descriptors
        { accessor => 'date_read', pretty_name => 'Date read',
 	 type => 'string' }, 
        { accessor => 'notes', pretty_name => 'Notes',
-	 type => 'text' },
+	 type => 'text', search_field => 'book.notes' },
        { accessor => 'location_id', pretty_name => 'Location',
 	 edit_p => 'find-location.cgi',
 	 type => 'foreign_key', class => 'Bookworm::Location' }
