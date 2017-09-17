@@ -4,6 +4,8 @@ add-book.cgi	prod	cgi	Add Book	Add
 add-book-author.cgi	prod	cgi	Add Book Author
 update-publisher.cgi	prod	cgi	Add Publisher	Add
 update-author.cgi	prod	cgi	Add Author	Add
+book-authorship.cgi	prod	cgi	Book Authorship
+update-authorship.cgi	prod	cgi	Update Authorship
 location.cgi	prod	cgi	Add Location	Add
 move-books.cgi	prod	cgi	Move Book(s)
 find-book.cgi	prod	cgi	Find Book	Search

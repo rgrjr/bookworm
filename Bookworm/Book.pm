@@ -2,7 +2,6 @@
 #
 # [created.  -- rgr, 29-Jan-11.]
 #
-# $Id$
 
 use strict;
 use warnings;
@@ -17,6 +16,12 @@ BEGIN {
               category date_read notes location_id) ]);
     Bookworm::Book->build_fetch_accessor
 	(qw(location location_id Bookworm::Location));
+    Bookworm::Book->build_set_fetch_accessor
+	('authorships',
+	 query => q{select authorship_id from book_author_map
+		    where book_id = ?},
+	 object_class => 'Bookworm::Authorship',
+	 cache_key => '_book_authorships');
 }
 
 sub table_name { 'book'; }
@@ -31,6 +36,9 @@ sub home_page_name { 'add-book.cgi'; }
 sub parent_id_field { 'location_id'; }
 
 sub search_page_name { 'find-book.cgi'; }
+
+sub contained_item_class { return 'Bookworm::Authorship'; }
+sub container_items { return shift()->authorships(@_); }
 
 sub book_title {
     # Synonym to avoid ambiguity in web_update.
@@ -194,10 +202,58 @@ sub post_web_update {
     push(@links,
 	 $q->a({ href => $similar_book_link }, '[Add similar book]'));
     push(@links,
-	 $q->a({ href => $q->oligo_query('add-book-author.cgi',
+	 $q->a({ href => $q->oligo_query('book-authorship.cgi',
 					 book_id => $self->book_id) },
-	       '[Add author]'));
+	       '[Update authors]'));
     return $q->ul(map { $q->li($_); } @links);
+}
+
+sub web_update_authorship {
+    my ($self, $q) = @_;
+    require ModGen::CGI::make_selection_op_buttons;
+
+    # Handle selection operations.
+    use ModGen::Web::Interface;
+    my $doit = $q->param('doit') || '';
+    my $interface = ModGen::Web::Interface->new(store_message_p => 1,
+						query => $q);
+    if ($self->handle_container_selection($q)) {
+	# Already done.
+    }
+    elsif ($doit eq 'Delete') {
+	my $message = $self->move_or_delete_items($q, $interface);
+	return
+	    unless $message;
+	delete($self->{_book_authorships});	# decache.
+    }
+    elsif ($doit =~ /To (top|bottom)|Renumber/) {
+	my $message = $self->renumber_selected_items($q);
+	$interface->_error($message)
+	    if $message;
+    }
+
+    # Present the page.
+    $q->_header();
+    print($q->h2('Authorship of ', $self->html_link($q)), "\n");
+    my $authorships = $self->authorships;
+    my $auth1 = $authorships->[0] || $self;
+    print($q->start_form(onsubmit
+			 => 'return submit_or_operate_on_selected(event)'),
+	  $q->hidden('book_id'),
+	  "\n");
+    print($auth1->present_object_content
+	  ($q, "authors",
+	   [ { accessor => 'authorship_id', pretty_name => 'Select?',
+	       type => 'checkbox', checked_p => 0, label => ' ' },
+	     { accessor => 'author_name', pretty_name => 'Author',
+	       type => 'self_link' },
+	     qw(attribution_order role) ],
+	   $authorships), "\n");
+    print($q->make_selection_op_buttons
+	      (commit => 1, 'Delete', 'To top', 'To bottom',
+	       selected => 0, 'Renumber'), "\n",
+	  $q->end_form(), "\n");
+    $q->_footer();
 }
 
 ### Database plumbing.

@@ -33,9 +33,13 @@ create table book (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 create table book_author_map (
+  authorship_id int(11) NOT NULL auto_increment,
   author_id int(11) NOT NULL,
   book_id int(11) NOT NULL,
-  primary key (author_id, book_id)
+  attribution_order int(3) NOT NULL default '1',
+  role enum('author', 'with', 'editor', 'translator')
+	NOT NULL default 'author',
+  primary key (authorship_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 create table location (
