@@ -2,7 +2,6 @@
 #
 # [created.  -- rgr, 25-May-13.]
 #
-# $Id$
 
 use strict;
 use warnings;
@@ -176,6 +175,9 @@ sub post_web_update {
 sub web_update {
     my ($self, $q, @options) = @_;
 
+    use ModGen::Web::Interface;
+    my $interface = ModGen::Web::Interface->new(store_message_p => 1,
+						query => $q);
     my $message;
     my $doit = $q->param('doit') || '';
     if ($self->handle_container_selection($q)) {
@@ -184,9 +186,7 @@ sub web_update {
     elsif (! $doit) {
     }
     elsif ($doit eq 'confirm_move' || $doit eq 'Move') {
-	$message = $self->move_or_delete_items($q);
-	return
-	    unless $message;
+	$self->move_or_delete_items($q, $interface);
 	delete($self->{_book_children});	# decache.
 	$q->delete('book_id');
     }
@@ -217,6 +217,7 @@ sub web_update {
 	if $message;
     $self->SUPER::web_update
 	($q, @options,
+	 interface => $interface,
 	 onsubmit => 'return submit_or_operate_on_selected(event)');
 }
 
