@@ -2,7 +2,6 @@
 #
 # [created.  -- rgr, 20-Oct-13.]
 #
-# $Id$
 
 use strict;
 use warnings;

@@ -4,7 +4,6 @@
 #
 # [created.  -- rgr, 29-Jan-11.]
 #
-# $Id$
 
 use strict;
 use warnings;
