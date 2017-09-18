@@ -27,7 +27,7 @@ sub table_name { 'book_author_map'; }
 sub primary_key { 'authorship_id'; }
 
 sub home_page_name { 'update-authorship.cgi'; }
-
+sub item_id { shift()->author_id(@_);}
 sub sort_index { shift()->attribution_order(@_); }
 
 sub author_name {
