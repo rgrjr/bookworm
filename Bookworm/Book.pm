@@ -55,17 +55,7 @@ sub authors {
 	return $self->{_authors};
     }
     else {
-	require Bookworm::Author;
-	my $authors = [ ];
-	my $query = qq(select author_id
-		       from book_author_map
-		       where book_id = ?);
-	my $dbh = $self->connect_to_database;
-	my $ids = $dbh->selectcol_arrayref($query, undef, $self->book_id)
-	    or die $dbh->errstr;
-	for my $id (@$ids) {
-	    push(@$authors, Bookworm::Author->fetch($id));
-	}
+	my $authors = [ map { $_->author; } @{$self->authorships} ];
 	$self->{_authors} = $authors;
 	return $authors;
     }
@@ -81,8 +71,7 @@ sub validate {
 }
 
 sub format_authors_field {
-    # This is only used for search and location display, so it is always
-    # read-only.
+    # This is only used for display, so it is always read-only.
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
     if ($value && ref($value) && @$value) {
@@ -102,12 +91,74 @@ sub format_authors_field {
     }
 }
 
+sub format_authorship_field {
+    # This is only used for display, so it is always read-only.
+    my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
+
+    return 'none'
+	unless $value && ref($value) && @$value;
+
+    # Classify.
+    my %authors_from_role;
+    for my $auth (@{$self->authorships}) {
+	push(@{$authors_from_role{$auth->role}}, $auth);
+    }
+
+    my $listify = sub {
+	my ($auths) = @_;
+
+	if (! $auths) {
+	    '';
+	}
+	elsif (@$auths == 2) {
+	    join(' and ', map { $_->author->html_link($q); } @$auths);
+	}
+	else {
+	    join(', ', map { $_->author->html_link($q); } @$auths);
+	}
+    };
+
+    # Start with authors (and ghostwriters).
+    my $result = $listify->($authors_from_role{author});
+    $result .= ' with ' . $listify->($authors_from_role{with})
+	if $authors_from_role{with};
+
+    # Add editors.
+    if ($authors_from_role{editor}) {
+	my $eds = $listify->($authors_from_role{editor});
+	my $n_eds = @{$authors_from_role{editor}};
+	if ($result) {
+	    $result .= ', edited by ' . $eds;
+	}
+	else {
+	    $result = "$eds, ed" . $self->pluralize($n_eds);
+	}
+    }
+
+    # And finally translators.
+    my $trans = $listify->($authors_from_role{translator});
+    if (! $trans) {
+	# Usual case without a translator.
+    }
+    elsif ($result) {
+	$result .= ", translated by $trans";
+    }
+    else {
+	# Transient situation?
+	$result = "Translated by $trans";
+    }
+    return $result;
+}
+
 my @field_descriptors
     = ({ accessor => 'book_id', verbosity => 2 },
        { accessor => 'title', pretty_name => 'Title',
 	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
 	 type => 'authors', order_by => '_sortable_authors' },
+       { accessor => 'authorships', pretty_name => 'Authors',
+	 type => 'authorship', order_by => '_sortable_authors',
+	 verbosity => 2 },
        { accessor => 'publisher_id', pretty_name => 'Publisher',
 	 type => 'foreign_key', class => 'Bookworm::Publisher',
 	 edit_p => 'find-publisher.cgi' },
@@ -151,7 +202,7 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'add-book.cgi',
 	       default_sort => 'asc' },
-	     qw(authors category publication_year publisher_id
+	     qw(authorships category publication_year publisher_id
 		notes date_read location_id) ];
 }
 
