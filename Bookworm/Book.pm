@@ -242,13 +242,17 @@ sub web_update_authorship {
 	  $q->hidden('book_id'),
 	  "\n");
     print($auth1->present_object_content
-	  ($q, "authors",
+	  ($q, "Authors",
 	   [ { accessor => 'authorship_id', pretty_name => 'Select?',
 	       type => 'checkbox', checked_p => 0, label => ' ' },
 	     { accessor => 'author_name', pretty_name => 'Author',
 	       type => 'self_link' },
 	     qw(attribution_order role) ],
 	   $authorships), "\n");
+    print($q->p($q->a({ href => $q->oligo_query('add-book-author.cgi',
+						book_id => $self->book_id) },
+		      '[Add author]')),
+	  "\n");
     print($q->make_selection_op_buttons
 	      (commit => 1, 'Delete', 'To top', 'To bottom',
 	       selected => 0, 'Renumber'), "\n",
