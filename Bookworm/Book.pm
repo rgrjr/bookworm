@@ -278,9 +278,7 @@ sub web_update_authorship {
 	delete($self->{_book_authorships});	# decache.
     }
     elsif ($doit =~ /To (top|bottom)|Renumber/) {
-	my $message = $self->renumber_selected_items($q);
-	$interface->_error($message)
-	    if $message;
+	$self->renumber_selected_items($q);
     }
 
     # Present the page.
