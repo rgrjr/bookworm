@@ -95,6 +95,17 @@ sub format_authorship_field {
     # This is only used for display, so it is always read-only.
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
 
+    # If we're not in the database, we have just author_id CGI values.
+    if (! $self->book_id) {
+	require Bookworm::Author;
+	# [yes, this is something of a kludge.  -- rgr, 9-Oct-17.]
+	my $authors = [ map { Bookworm::Author->fetch($_);
+			} $q->param('author_id') ];
+	return 'none'
+	    unless @$authors;
+	my $d = $self->find_accessor_descriptor('author_id');
+	return $self->format_authors_field($q, $d, 'author_id', 1, $authors);
+    }
     return 'none'
 	unless $value && ref($value) && @$value;
 
@@ -155,10 +166,10 @@ my @field_descriptors
        { accessor => 'title', pretty_name => 'Title',
 	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
-	 type => 'authors', order_by => '_sortable_authors' },
-       { accessor => 'authorships', pretty_name => 'Authors',
-	 type => 'authorship', order_by => '_sortable_authors',
+	 type => 'authors', order_by => '_sortable_authors',
 	 verbosity => 2 },
+       { accessor => 'authorships', pretty_name => 'Authors',
+	 type => 'authorship', order_by => '_sortable_authors' },
        { accessor => 'publisher_id', pretty_name => 'Publisher',
 	 type => 'foreign_key', class => 'Bookworm::Publisher',
 	 edit_p => 'find-publisher.cgi' },
