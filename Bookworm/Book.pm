@@ -283,9 +283,8 @@ sub web_update_authorship {
 	# Already done.
     }
     elsif ($doit eq 'Delete') {
-	my $message = $self->move_or_delete_items($q, $interface);
-	return
-	    unless $message;
+	$self->move_or_delete_items($q, $interface)
+	    and return;
 	delete($self->{_book_authorships});	# decache.
     }
     elsif ($doit =~ /To (top|bottom)|Renumber/) {
