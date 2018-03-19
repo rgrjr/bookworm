@@ -151,6 +151,11 @@ sub post_web_update {
     $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
     my $child_locations = $self->location_children;
+    my $books = $self->book_children;
+    my $selection_buttons
+	= (@$books
+	   ? $q->make_selection_op_buttons(commit => 0, 'Move books')
+	   : '');
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
@@ -167,9 +172,8 @@ sub post_web_update {
 			  { accessor => 'title', pretty_name => 'Title',
 			    type => 'self_link' },
 			  qw(publication_year authors category notes) ],
-			$self->book_children),
-		$q->make_selection_op_buttons(commit => 0, 'Move books'),
-		"\n");
+			$books),
+		$selection_buttons, "\n");
 }
 
 sub web_update {
