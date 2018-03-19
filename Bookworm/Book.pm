@@ -221,9 +221,9 @@ my $web_search_base_query
     = q{select book.*,
 	       group_concat(last_name separator ', ') as _sortable_authors
 	from book
-	     join book_author_map as bam
+	     left join book_author_map as bam
 		  on bam.book_id = book.book_id
-	     join author
+	     left join author
 		  on author.author_id = bam.author_id};
 
 sub web_search {
