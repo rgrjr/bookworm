@@ -196,7 +196,7 @@ sub default_search_fields {
     return [ { accessor => 'book_title',
 	       pretty_name => 'Title/ID',
 	       search_type => 'string',
-	       search_id => 'book_id',
+	       search_id => 'book.book_id',
 	       search_field => 'title' },
 	     { accessor => 'last_name', pretty_name => 'Authors',
 	       type => 'text',
