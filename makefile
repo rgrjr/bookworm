@@ -50,14 +50,14 @@ cgi/web_map.tsv:	${web-database}
 	perl -ne ${transform_navmap} < ${web-database} >> $@.tmp
 	mv $@.tmp $@
 install-web:	check-web-dirs
-	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='install'
+	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='install'
 # Maintenance tools, intended for development.
 cmp-web:
-	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=cmp
+	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=cmp
 diff-web:
-	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='diff -u'
+	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='diff -u'
 reverse-install-web:
-	${MODEST}maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=reverse-install
+	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=reverse-install
 
 FIND-SOURCES = find . -type f | egrep '\.(p[lm]|cgi)$$' | grep -v old | sort
 ETAGS = etags --no-globals
