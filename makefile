@@ -31,20 +31,19 @@ MAINTAIN-WEB-OPTS = --cgi-root=${bookworm-path} \
 	--hacked-include=`cd ${modest-dir} && pwd`
 check-web-dirs:	cgi/web_map.tsv
 	test -d "${bookworm-path}" && test -w "${bookworm-path}"
-# Try to make this robust about whether we have an SVN client.
-revision.text:		makefile .
-	echo -n '${RELEASE}' > $@
-	if [ -d .svn ]; then  \
-	    echo ', revision ' `svnversion` >> $@; \
-	fi
 # Create the Web map from web-files.tbl.
 transform_navmap = \
 	'chomp; \
 	 my ($$script, $$status, $$type, $$page_name, $$menu) = split("\t"); \
 	 print join("\t", "page", $$script, $$page_name, $$menu || ""), "\n";'
 cgi/web_map.tsv:	${web-database}
-	echo -n 'modest_version	' > $@.tmp
-	echo -n '${RELEASE}' >> $@.tmp
+	echo -n 'modest_version	${RELEASE}' > $@.tmp
+	if [ -d .git ]; then  \
+	    echo -n ', revision ' >> $@.tmp; \
+	    git log -n 1 --pretty=format:%h >> $@.tmp; \
+	    echo -n ' on ' >> $@.tmp; \
+	    echo -n `git branch --contains | fgrep '*' | cut -c3-` >> $@.tmp; \
+	fi
 	echo >> $@.tmp
 	echo "server_prefix	${server-prefix}" >> $@.tmp
 	perl -ne ${transform_navmap} < ${web-database} >> $@.tmp
@@ -67,4 +66,4 @@ wc:
 	${FIND-SOURCES} | xargs wc
 
 clean:
-	rm -f revision.text cgi/web_map.tsv
+	rm -f cgi/web_map.tsv *.tmp
