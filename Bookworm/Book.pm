@@ -351,3 +351,182 @@ sub insert {
 }
 
 1;
+
+__END__
+
+=head1 Bookworm::Book
+
+=head2 Accessors and methods
+
+=head3 authors
+
+Returns or sets an arrayref of authors.  The first time this is called
+with no arguments, the authors are retrieved from our C<authorships>,
+and the result is cached.  If called with an arrayref, the cached
+value is updated, but no attempt is made to change the C<authorships>
+value or the database.  This is intended for keeping track of authors
+before the book has been added to the database; see the L</insert>
+method.  Use with caution; if the authorship set is changed, the cache
+is not invalidated.
+
+=head3 authorships
+
+Set fetch accessor that retrieves an arrayref of
+C<Bookworm::Authorship> instances from the database that belong to
+this book.
+
+=head3 book_id
+
+Returns or sets the primary key for this book.
+
+=head3 book_title
+
+Synonym for the L</title> slot, to avoid ambiguity in C<web_update>.
+
+=head3 category
+
+Returns or sets the book category, e.g. fiction, biography.  This is
+implemented as an enumeration in the schema and the user interface.
+
+=head3 contained_item_class
+
+Returns the string 'Bookworm::Authorship', which enables books to act
+as containers for their author(s).
+
+=head3 container_items
+
+This acts as an alias for the C<authorship> slot, which enables books
+to act as containers for their author(s).
+
+=head3 date_read
+
+Returns or sets a string recording the date on which the book was last
+read.  This is treated as a string, partly to allow approximate dates,
+and partly because the MODEST user interface does not have much
+support for dates, other than recording and displaying them.
+
+=head3 default_display_columns
+
+Returns an arrayref of attribute descriptors and attribute names for
+book search result display.
+
+=head3 default_search_fields
+
+Returns an arrayref of attribute descriptors and attribute names that
+define book search dialog fields.
+
+=head3 format_authors_field
+
+Given a C<ModGen::CGI> query object, an attribute descriptor, the name
+of the CGI parameter, a read-only flag, and the value (an arrayref of
+C<Bookworm::Author> objects), return a string with links to all
+authors.  This is used for books that are not in the database yet, so
+they don't have L</authorship>.  The read-only flag is ignored because
+the value is always treated as read-only.  See
+L<ModGen::Thing/format_accessor_value>.
+
+=head3 format_authorship_field
+
+Given a C<ModGen::CGI> query object, an attribute descriptor, the name
+of the CGI parameter, a read-only flag, and the value (an arrayref of
+C<Bookworm::Authorship> objects), return a string with links to all
+authors, treating ghostwriters, editors, and translators specially;
+this is the normal way to present the L</authorship> for a book.  The
+read-only flag is ignored because the value is always treated as
+read-only.  See L<ModGen::Thing/format_accessor_value>.
+
+Here's an example of the C<format_authorship_field> result for
+multiple "author" authors (title on the first line, authorship string
+on the second):
+
+	Shadow of the Lion, The
+	Mercedes Lackey, Eric Flint, David Freer
+
+For a "with" author:
+
+	Within Reach: My Everest Story
+	Mark Pfetzer with Jack Galvin
+
+For an edited collection:
+
+	Best SF: 1967
+	Harry Harrison and Brian W. Aldiss, eds
+
+For a translated work:
+
+	Love in the Time of Cholera
+	Gabriel Garcia Marquez, translated by Edith Grossman
+
+In the second and third examples, the authorship C<attribution_order>
+is ignored, because translators and "with" authors are always
+presented after "primary" authors.
+
+=head3 home_page_name
+
+Returns the string "add-book.cgi", so that the C<home_page_url> method
+of C<Bookworm::Base> can construct a URL for the book.  See the
+L<ModGen::DB::Thing/html_link> method.
+
+=head3 insert
+
+Given a database handle, insert the book into the database (taken care
+of by the C<ModGen::DB::Thing> main method), and then update the
+C<book_author_map> table to match the value cached from the
+L</authors> accessor.
+
+=head3 location
+
+Fetch accessor that returns or sets the C<Bookworm::Location> based on
+the C<location_id>.
+
+=head3 location_id
+
+Returns or sets the ID of the book's location, a C<Bookworm::Location>
+instance.  When created, a book is not required to have a location,
+but there is no user interface for removing a location.
+
+=head3 notes
+
+Returns or sets free text notes about the book.
+
+=head3 parent_id_field
+
+This slot acts as an alias for the L</location_id> slot.
+
+=head3 publication_year
+
+Returns or sets a string identifying the year of publication.  (For
+reissues of classics, I usually make this the year of first
+publication, and put the actual year this edition was published in the
+notes.)
+
+=head3 publisher_id
+
+Returns or sets the ID of the C<Bookworm::Publisher>.  Note that there
+is no fetch accessor for the publisher, because we don't do much with
+publishers.
+
+=head3 title
+
+Returns or sets the string that is the primary title of the book,
+prepared for sorting, as in "Adventures of Huckleberry Finn, The".
+Subtitles are usually reported in the C<notes> field.
+
+=head3 validate
+
+Given a C<ModGen::Web::Interface>, insists on having a C<title> and a
+C<publisher_id>, reporting any errors via the interface.
+
+=head3 web_add_author
+
+Autoloaded.
+
+=head3 web_update_authorship
+
+Presents a Web page that allows the authorship
+(i.e. C<book_author_map> content) to be manipulated by the user.  This
+uses the MODEST container API to reorder and/or delete authors en
+masse (not that we usually have masses of authors).  See
+L<ModGen::DB::Thing/The container API>.
+
+=cut

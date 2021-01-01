@@ -39,3 +39,14 @@ sub web_add_author {
 }
 
 1;
+
+__END__
+
+=head3 web_add_author
+
+Presents a Web page that adds an author to a book.  If there is no
+C<author_id> CGI parameter, we redirect to the C<find-author.cgi>
+page.  Otherwise, if the author is not already one of ours, we add a
+C<book_author_map> row and redirect back to the book page.
+
+=cut
