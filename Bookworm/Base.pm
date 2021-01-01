@@ -115,3 +115,38 @@ sub class_from_cookie_name {
 =for grins
 
 =cut
+
+__END__
+
+=head1 Bookworm::Base
+
+Base class for Bookworm methods.  This is not itself a table class; it
+is just used as a place to keep some common methods.
+
+=head2 Accessors and methods
+
+=head3 class_from_cookie_name
+
+Given a cookie name (e.g. C<last_author>), maps it to a class name
+(e.g. C<Bookworm::Author>), for use by search pages.
+
+=head3 connect_to_database
+
+Class or instance method.  Returns the database connection.
+
+=head3 format_location_chain_field
+
+Given a C<ModGen::CGI> query object, an attribute descriptor, the name
+of the CGI parameter, a read-only flag, and the value (a location ID),
+return a string that represents the complete hierarchical location.
+The C<parent_location_id> chain is traced until we get to the top,
+producing the list of links to all containing locations separated by
+" E<gt>E<gt> ".  The read-only flag is ignored because the value is
+always treated as read-only.  See
+L<ModGen::Thing/format_accessor_value>.
+
+=head3 web_home_page
+
+Autoloaded.
+
+=cut
