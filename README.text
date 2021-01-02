@@ -1,4 +1,4 @@
-   bookworm is a Perl Web application that helps me keep track of the
+   Bookworm is a Perl Web application that helps me keep track of the
 books I have read, and where I keep them.  It allows you to search for
 books based on author, title, when they were read, and where they are
 stored, as well as searching authors, showing all the books you have
@@ -7,7 +7,7 @@ location.  Since 2013, I have been using it to sort through my books,
 rediscover what I want to reread and what I want to get rid of (I had
 well over a thousand at one point!).
 
-   Unfortunately, it is based on some proprietary code I developed at
-work, used as a Web framework, so it is not likely to be of much use to
-anyone else.  Still, despite being under-documented, it shows something
-of the flavor of the framework and how it is used.
+   Unfortunately, Bookworm based on some proprietary code I developed at
+work, which it uses as a Web framework, so it is not likely to be of
+much use to anyone else.  Still, despite being under-documented, it
+shows something of the flavor of the framework and how it is used.
