@@ -43,3 +43,39 @@ my @field_descriptors
 sub local_display_fields { return \@field_descriptors };
 
 1;
+
+__END__
+
+=head1 Bookworm::Publisher
+
+Class for representing Bookworm publishers.  These are pretty
+straightforward, because although we require them in order to add a
+book to the collection, we don't do much else with them.
+
+=head2 Accessors and methods
+
+=head3 home_page_name
+
+Returns the string "update-publisher.cgi", so that the
+C<home_page_url> method of C<Bookworm::Base> can construct a URL for
+the publisher.  See the L<ModGen::DB::Thing/html_link> method.
+
+=head3 publisher_city
+
+Returns or sets the name of the city in which the publisher is
+located, e.g. "New York", which is free text.
+
+=head3 publisher_id
+
+Returns or sets the primary key of the publisher in the database.
+
+=head3 publisher_name
+
+Returns or sets the name of the publisher, which is free text.
+
+=head3 validate
+
+Given a C<ModGen::Web::Interface>, insists on having a
+C<publisher_name> reporting any errors via the interface.
+
+=cut

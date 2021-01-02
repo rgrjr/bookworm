@@ -40,6 +40,16 @@ sub web_home_page {
 
 1;
 
-=for grins
+=head3 web_home_page
+
+Produces the home page for the Bookworm application.  This is what you
+see when you click on "Home" in the menu bar, which invokes the main
+"index.html" page.  It produces a line like:
+
+    Total of 1216 books by 582 authors from 167 publishers in 87 locations.
+
+where (e.g.) "1216 books" is a link to the C<find-book.cgi> page.
+This is easy given that there are only four kinds of searchable
+objects in the database.
 
 =cut

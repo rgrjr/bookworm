@@ -93,11 +93,8 @@ sub validate_parent_location_id {
 	    "Location with ID '$new_location_id' doesn't exist.\n";
 	}
     }
-    elsif ($self->can('ancestor_of')
-	   && $self->ancestor_of($new_parent_location)) {
-	# Make sure we don't create a loop.  (If we can't do 'ancestor_of',
-	# then we assume we can't contain other locations, which means we can't
-	# be involved in a loop no matter where we're put.)
+    elsif ($self->ancestor_of($new_parent_location)) {
+	# Make sure we don't create a loop.
 	"Can't move a location under itself!\n";
     }
 }
@@ -317,3 +314,118 @@ sub default_display_columns {
 }
 
 1;
+
+__END__
+
+=head1 Bookworm::Location
+
+Class that represents a location which contains books (fetched by
+L</book_children>) and possibly other locations (fetched by
+L</location_children>).  The graph of L</parent_location_id> links
+forms a tree, at the top of which is the root location, which is named
+"Somewhere" (so it can include a suitably-named location for lost
+books).
+
+=head2 Accessors and methods
+
+=head3 ancestor_of
+
+Given another C<Bookworm::Location> object, returns true iff self
+contains the other location.  This is used to prevent cycles by the
+user interface that moves locations.
+
+=head3 book_children
+
+Set fetch accessor that retrieves an arrayref of C<Bookworm::Book>
+instances from the database that are stored at this location by virtue
+of having their C<location_id> point to us.
+
+=head3 children
+
+Synonym for the L</location_children> accessor, to provide the
+location hierarchy browser with something to browse.
+
+=head3 container_items
+
+Synonym for the L</book_children> accessor, so that locations can use
+the container API for their books.
+See L<ModGen::DB::Thing/The container API>.
+
+=head3 default_display_columns
+
+Returns an arrayref of attribute descriptors and attribute names for
+location search result display.
+
+=head3 default_search_fields
+
+Returns an arrayref of attribute descriptors and attribute names that
+define location search dialog fields.
+
+=head3 description
+
+Returns or sets a free text description of the location.  This is
+usually used to describe the purpose of the location, since I tend to
+create locations that are fine-grained enough to be self-describing,
+e.g. "Somewhere >> home >> Bedroom >> BR Bookshelf >> BR BS #3".
+
+=head3 fetch_root
+
+Class method that fetches the "Somewhere" location.  Hierarchy browser
+support.
+
+=head3 home_page_name
+
+Returns the string "location.cgi", so that the C<home_page_url> method
+of C<Bookworm::Base> can construct a URL for the book.  See the
+L<ModGen::DB::Thing/html_link> method.
+
+=head3 location_children
+
+Set fetch accessor that retrieves an arrayref of C<Bookworm::Location>
+instances from the database that are contained within this location by
+virtue of having their C<location_id> point to us.
+
+=head3 location_id
+
+Returns or sets the primary key for the location.
+
+=head3 name
+
+Returns or sets the location name.  This is not constrained to be
+unique.
+
+=head3 parent_location
+
+Returns or sets the parent location, another C<Bookworm::Location>
+instance, through the L</parent_location_id> slot.  When changing
+this, be careful not to create cycles.
+
+=head3 parent_location_id
+
+Returns or sets the ID of the parent location, another
+C<Bookworm::Location> instance.  When changing this, be careful not to
+create cycles.
+
+=head3 sorted_children
+
+Returns L</location_children> as a list (rather than an arrayref), to
+provide the location hierarchy browser with something to browse.
+
+=head3 validate_parent_location_id
+
+Validation method used by C<web_update> to ensure that a new
+C<parent_location_id> is acceptable as a parent location, mostly that
+we're not the root and the new parent doesn't create a cycle.  See the
+L<ModGen::DB::Thing/web_update> method.
+
+=head3 web_move_books
+
+Presents a page that moves a selection of books to this location.
+From a link presented by C<post_web_update>, we redirect to the
+C<find-book.cgi> page to select one or more books.  With multiple
+C<book_id> parameters in hand, we present a page with the book titles
+and their old locations and ask the user to confirm the move.  If the
+user clicks the confirm button, the book locations are updated, and
+the user is redirected back to the destination location page.
+
+=cut
