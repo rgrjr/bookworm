@@ -148,3 +148,83 @@ sub post_web_update {
 }
 
 1;
+
+__END__
+
+=head1 Bookworm::Author
+
+Represents an author in the Bookworm database.  This also includes
+editors, ghostwriters, and translators.  Authors are primarily
+interesting in terms of the books they have written.
+
+=head2 Accessors and methods
+
+=head3 author_id
+
+Returns or sets the primary key for the author in the database.
+
+=head3 author_name
+
+Returns the C<first_name>, C<mid_name>, and C<last_name>, suitably
+composed into a single string.
+
+=head3 author_sort_name
+
+Returns or sets a sortable version of the author's name This slot is
+constructed as "C<last_name>, C<first_name>, C<mid_name>" by the
+search page, and is not valid otherwise.
+
+=head3 books
+
+Returns or sets an arrayref of C<Bookworm::Book> objects for which we
+have some kind of authorship as recorded in the C<book_author_map>
+table (though we might in fact just be an editor).  Note that setting
+the C<books> slot does not update C<book_author_map>.
+
+=head3 default_display_columns
+
+Returns an arrayref of attribute descriptors and attribute names for
+author search result display.
+
+=head3 default_search_fields
+
+Returns an arrayref of attribute descriptors and attribute names that
+define author search dialog fields.
+
+=head3 first_name
+
+Returns or sets the first name of the author, which is free text.  The
+first name is not required.
+
+=head3 home_page_name
+
+Returns the string "update-author.cgi", so that the C<home_page_url>
+method of C<Bookworm::Base> can construct a URL for the book.  See the
+L<ModGen::DB::Thing/html_link> method.
+
+=head3 last_name
+
+Returns or sets the last name and optional suffix of the author, which
+is free text.  The last name is required by the C<validate> method.
+
+=head3 mid_name
+
+Returns or sets the middle name or initial of the author, which is
+free text.  The middle name is not required.
+
+=head3 n_books
+
+Returns or sets the number of books we have by this author.  This slot
+is created by the search page, and is not valid otherwise.
+
+=head3 notes
+
+Returns or sets a free text string of notes about the author, which is
+free text.
+
+=head3 validate
+
+Given a C<ModGen::Web::Interface>, insists on having a C<last_name>,
+reporting an error via the interface if it is missing.
+
+=cut
