@@ -498,6 +498,9 @@ Autoloaded.
 =head3 web_update_authorship
 
 Presents a Web page that allows the authorship
-(i.e. C<book_author_map> content) to be manipulated by the user.
+(i.e. C<book_author_map> content) to be manipulated by the user.  This
+uses the MODEST container API to reorder and/or delete authors en
+masse (not that we usually have masses of authors).  See
+L<ModGen::DB::Thing/The container API>.
 
 =cut
