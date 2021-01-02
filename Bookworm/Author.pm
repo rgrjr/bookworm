@@ -21,7 +21,7 @@ sub table_name { 'author'; }
 sub primary_key { 'author_id'; }
 
 sub pretty_name { shift()->author_name(); }
-sub home_page_name { 'update-author.cgi'; }
+sub home_page_name { 'author.cgi'; }
 sub search_page_name { 'find-author.cgi'; }
 
 sub books {
@@ -98,7 +98,7 @@ sub default_search_fields {
 sub default_display_columns {
     return [ { accessor => 'author_sort_name', pretty_name => 'Author name',
 	       type => 'return_address_link',
-	       return_address => 'update-author.cgi',
+	       return_address => 'author.cgi',
 	       order_by => '_author_sort_name' },
 	     { accessor => 'n_books', pretty_name => '# books',
 	       order_by => '_n_books' },
@@ -129,7 +129,7 @@ sub web_search {
 my $book_columns
     = [ { accessor => 'title', pretty_name => 'Book',
 	  type => 'return_address_link',
-	  return_address => 'add-book.cgi' },
+	  return_address => 'book.cgi' },
 	qw(publication_year category notes date_read location_id) ];
 
 sub post_web_update {
@@ -137,8 +137,7 @@ sub post_web_update {
 
     my @stuff;
     my $author_book_link
-	= $q->oligo_query('add-book.cgi',
-			  author_id => $self->author_id);
+	= $q->oligo_query('book.cgi', author_id => $self->author_id);
     push(@stuff,
 	 $q->a({ href => $author_book_link }, '[Add book]'));
     my $books = $self->books;
@@ -198,7 +197,7 @@ first name is not required.
 
 =head3 home_page_name
 
-Returns the string "update-author.cgi", so that the C<home_page_url>
+Returns the string "author.cgi", so that the C<home_page_url>
 method of C<Bookworm::Base> can construct a URL for the book.  See the
 L<ModGen::DB::Thing/html_link> method.
 

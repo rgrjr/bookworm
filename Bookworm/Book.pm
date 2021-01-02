@@ -31,7 +31,7 @@ sub primary_key { 'book_id'; }
     sub web_add_author;
 
 sub pretty_name { shift()->title(); }
-sub home_page_name { 'add-book.cgi'; }
+sub home_page_name { 'book.cgi'; }
 
 sub parent_id_field { 'location_id'; }
 
@@ -211,7 +211,7 @@ sub default_search_fields {
 sub default_display_columns {
     return [ { accessor => 'title', pretty_name => 'Book',
 	       type => 'return_address_link',
-	       return_address => 'add-book.cgi',
+	       return_address => 'book.cgi',
 	       default_sort => 'asc' },
 	     qw(authorships category publication_year publisher_id
 		notes date_read location_id) ];
@@ -255,7 +255,7 @@ sub post_web_update {
 
     my @links;
     my $similar_book_link
-	= $q->oligo_query('add-book.cgi',
+	= $q->oligo_query('book.cgi',
 			  (map { ($_ => $self->$_());
 			   } qw(publisher_id publication_year
 				category notes location_id)),
@@ -463,7 +463,7 @@ presented after "primary" authors.
 
 =head3 home_page_name
 
-Returns the string "add-book.cgi", so that the C<home_page_url> method
+Returns the string "book.cgi", so that the C<home_page_url> method
 of C<Bookworm::Base> can construct a URL for the book.  See the
 L<ModGen::DB::Thing/html_link> method.
 

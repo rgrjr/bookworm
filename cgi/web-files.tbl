@@ -1,9 +1,9 @@
 web_map.tsv	prod	csv
 index.cgi	prod	cgi	Home	Home
-add-book.cgi	prod	cgi	Add Book	Add
+book.cgi	prod	cgi	Add Book	Add
 add-book-author.cgi	prod	cgi	Add Book Author
-update-publisher.cgi	prod	cgi	Add Publisher	Add
-update-author.cgi	prod	cgi	Add Author	Add
+publisher.cgi	prod	cgi	Add Publisher	Add
+author.cgi	prod	cgi	Add Author	Add
 book-authorship.cgi	prod	cgi	Book Authorship
 update-authorship.cgi	prod	cgi	Update Authorship
 location.cgi	prod	cgi	Add Location	Add

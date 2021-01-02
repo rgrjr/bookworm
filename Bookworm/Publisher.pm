@@ -22,7 +22,7 @@ sub primary_key { 'publisher_id'; }
 #    sub web_search;
 
 sub pretty_name { shift()->publisher_name(); }
-sub home_page_name { 'update-publisher.cgi'; }
+sub home_page_name { 'publisher.cgi'; }
 sub search_page_name { 'find-publisher.cgi'; }
 
 sub validate {
@@ -56,7 +56,7 @@ book to the collection, we don't do much else with them.
 
 =head3 home_page_name
 
-Returns the string "update-publisher.cgi", so that the
+Returns the string "publisher.cgi", so that the
 C<home_page_url> method of C<Bookworm::Base> can construct a URL for
 the publisher.  See the L<ModGen::DB::Thing/html_link> method.
 
