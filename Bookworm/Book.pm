@@ -430,10 +430,36 @@ L<ModGen::Thing/format_accessor_value>.
 Given a C<ModGen::CGI> query object, an attribute descriptor, the name
 of the CGI parameter, a read-only flag, and the value (an arrayref of
 C<Bookworm::Authorship> objects), return a string with links to all
-authors, treating editors and translators specially; this is the
-normal way to present the L</authorship> for a book.  The read-only
-flag is ignored because the value is always treated as read-only.  See
-L<ModGen::Thing/format_accessor_value>.
+authors, treating ghostwriters, editors, and translators specially;
+this is the normal way to present the L</authorship> for a book.  The
+read-only flag is ignored because the value is always treated as
+read-only.  See L<ModGen::Thing/format_accessor_value>.
+
+Here's an example of the C<format_authorship_field> result for
+multiple "author" authors (title on the first line, authorship string
+on the second):
+
+	Shadow of the Lion, The
+	Mercedes Lackey, Eric Flint, David Freer
+
+For a "with" author:
+
+	Within Reach: My Everest Story
+	Mark Pfetzer with Jack Galvin
+
+For an edited collection:
+
+	Best SF: 1967
+	Harry Harrison and Brian W. Aldiss, eds
+
+For a translated work:
+
+	Love in the Time of Cholera
+	Gabriel Garcia Marquez, translated by Edith Grossman
+
+In the second and third examples, the authorship C<attribution_order>
+is ignored, because translators and "with" authors are always
+presented after "primary" authors.
 
 =head3 home_page_name
 
