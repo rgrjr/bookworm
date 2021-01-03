@@ -19,7 +19,8 @@ BEGIN {
     Bookworm::Book->build_set_fetch_accessor
 	('authorships',
 	 query => q{select authorship_id from book_author_map
-		    where book_id = ?},
+		    where book_id = ?
+		    order by role desc, attribution_order asc},
 	 object_class => 'Bookworm::Authorship',
 	 cache_key => '_book_authorships');
 }
@@ -308,9 +309,12 @@ sub web_update_authorship {
 	       type => 'self_link' },
 	     qw(attribution_order role) ],
 	   $authorships), "\n");
-    print($q->p($q->a({ href => $q->oligo_query('add-book-author.cgi',
-						book_id => $self->book_id) },
-		      '[Add author]')),
+    my $return_address = $q->oligo_query('book-authorship.cgi',
+					 book_id => $self->book_id);
+    my $add_author = $q->oligo_query('add-book-author.cgi',
+				     return_address => $return_address,
+				     book_id => $self->book_id);
+    print($q->p($q->a({ href => $add_author }, '[Add author]')),
 	  "\n");
     print($q->make_selection_op_buttons
 	      (commit => 1, 'Delete', 'To top', 'To bottom',
