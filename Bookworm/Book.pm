@@ -314,7 +314,7 @@ sub web_update_authorship {
     my $add_author = $q->oligo_query('add-book-author.cgi',
 				     return_address => $return_address,
 				     book_id => $self->book_id);
-    print($q->p($q->a({ href => $add_author }, '[Add author]')),
+    print($q->p($q->a({ href => $add_author }, '[Add author(s)]')),
 	  "\n");
     print($q->make_selection_op_buttons
 	      (commit => 1, 'Delete', 'To top', 'To bottom',
