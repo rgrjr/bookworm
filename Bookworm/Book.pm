@@ -19,7 +19,8 @@ BEGIN {
     Bookworm::Book->build_set_fetch_accessor
 	('authorships',
 	 query => q{select authorship_id from book_author_map
-		    where book_id = ?},
+		    where book_id = ?
+		    order by role desc, attribution_order asc},
 	 object_class => 'Bookworm::Authorship',
 	 cache_key => '_book_authorships');
 }
