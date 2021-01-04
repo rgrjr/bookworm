@@ -92,7 +92,11 @@ sub default_search_fields {
     return [ { accessor => 'last_name', pretty_name => 'Author name',
 	       type => 'string',
 	       search_field => [ qw(first_name mid_name last_name) ] },
-	     'notes' ];
+	     'notes',
+	     { accessor => 'limit',
+	       search_type => 'limit',
+	       pretty_name => 'Max authors to show',
+	       default => 100 } ];
 }
 
 sub default_display_columns {
