@@ -26,6 +26,25 @@ allows you to pick new values for the order and role.  The "To top",
 "To bottom", and "Renumber" buttons below the table also reorder the
 authors by changing these values.  
 
+The "[Add author]" link takes you to the L<find-author.cgi> page; as
+soon as you pick one, the author is added to the end of the book's
+list of authors and you are returned to the authorship page.
+
+The buttons at the bottom of the page provide another way to reorder
+the authors; they may also be deleted this way.  Buttons in B<bold>
+operate on the database immediately, without further confirmation,
+while the other buttons and links have no direct effect on the
+database.  The "Delete", "To top", and "To bottom" buttons require you
+to select some authors first.  Renumbering a subset of authors tries
+to make the numbers consecutive without overlap or changing the order
+of authors.  If no authors are selected when you click "Renumber",
+then all authors are renumbered starting from one.  Renumbering or
+reordering may cause the numbers of unselected authors to change when
+necessary to keep the numbers consistent with the desired order; this
+happens regardless of author role.
+
+=head2 Presentation of author information
+
 When authors are presented, two authors are joined by " and ", and
 three or more authors are joined by ", ".  Here are a few real
 examples (title on the first line, authorship on the second):
