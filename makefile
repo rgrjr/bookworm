@@ -16,7 +16,7 @@ bookworm-path = /srv/www/htdocs/${server-prefix}
 
 RELEASE = 0.1
 # This is the number of the compatible MODEST release.
-MODEST_RELEASE = 2.4
+MODEST_RELEASE = 2.29
 
 all:
 	@echo Nobody here but us scripts.

@@ -77,21 +77,8 @@ sub web_search {
     }
 
     # Default the search fields.
-    my $search_fields = $options{search_fields};
-    if ($search_fields) {
-	# Already specified by the caller.
-    }
-    elsif ($class->can('default_search_fields')) {
-	push(@options, search_fields => $class->default_search_fields);
-    }
-    else {
-	$search_fields = [ ];
-	for my $descriptor (@{$class->display_fields}) {
-	    push(@$search_fields, $descriptor->{accessor})
-		unless ($descriptor->{verbosity} || 1) > 1;
-	}
-	push(@options, search_fields => $search_fields);
-    }
+    push(@options, search_fields => $class->default_search_fields)
+	if ! $options{search_fields} && $class->can('default_search_fields');
     return $class->SUPER::web_search($q,
 				     create_new_page => $class->home_page_name,
 				     @options);
