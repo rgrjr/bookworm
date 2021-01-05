@@ -20,7 +20,7 @@ BEGIN {
 	('authorships',
 	 query => q{select authorship_id from book_author_map
 		    where book_id = ?
-		    order by role desc, attribution_order asc},
+		    order by role asc, attribution_order asc},
 	 object_class => 'Bookworm::Authorship',
 	 cache_key => '_book_authorships');
 }
