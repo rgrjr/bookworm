@@ -61,4 +61,4 @@ create table publisher (
 --- Constant data.
 
 insert into location (name, description)
-    values ('home', '50 Foster St.');
+    values ('Somewhere', 'The root of all locations.');
