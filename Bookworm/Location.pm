@@ -99,6 +99,15 @@ sub validate_parent_location_id {
     }
 }
 
+sub validate {
+    my ($self, $interface) = @_;
+
+    $interface->_error("Locations must have parent location.\n")
+	unless $self->parent_location_id || $self->name eq 'Somewhere';
+}
+
+### Container API support.
+
 sub contained_item_key {
     return 'book_id';
 }
@@ -124,6 +133,8 @@ sub sorted_children {
 
     return @{$self->location_children()};
 }
+
+### Web page stuff.
 
 sub fetch_root {
     # Hierarchy browser support.
@@ -177,7 +188,7 @@ sub web_update {
     my ($self, $q, @options) = @_;
 
     use ModGen::Web::Interface;
-    my $interface = ModGen::Web::Interface->new(store_message_p => 1,
+    my $interface = ModGen::Web::Interface->new(store_messages_p => 1,
 						query => $q);
     my $message;
     my $doit = $q->param('doit') || '';
