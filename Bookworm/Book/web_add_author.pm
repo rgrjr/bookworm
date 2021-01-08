@@ -9,11 +9,12 @@ sub web_add_author {
     my ($self, $q) = @_;
 
     # Validate.
-    my $author_id = $q->param('author_id');
+    my @author_ids = $q->param('author_id');
     my $self_address = $q->modified_self_url();
-    my $search_url = $q->oligo_query('find-author.cgi',
-				     return_address => $self_address);
-    if (! $author_id) {
+    if (! @author_ids) {
+	my $search_url = $q->oligo_query('find-author.cgi',
+					 multiple_p => 1,
+					 return_address => $self_address);
 	print $q->redirect($search_url);
 	return;
     }
@@ -21,26 +22,40 @@ sub web_add_author {
     # Check for duplication.
     my $caller = $q->param('return_address') || $self->home_page_url($q);
     my $max_order = 0;
-    for my $authorship (@{$self->authorships}) {
-	if ($authorship->author_id == $author_id) {
-	    my $msg = $authorship->author_name . ' is already an author.';
+    {
+	my $msg = '';
+	my %author_id_p = map { ($_ => 1); } @author_ids;
+	for my $authorship (@{$self->authorships}) {
+	    if ($author_id_p{$authorship->author_id}) {
+		$msg .= "\n"
+		    if $msg;
+		$msg .= $authorship->author_name . ' is already an author.';
+	    }
+	    my $order = $authorship->attribution_order;
+	    $max_order = $order
+		if $max_order < $order;
+	}
+	if ($msg) {
 	    my $return_address = $q->oligo_query($caller, _messages => $msg);
 	    print $q->redirect($return_address);
 	    return;
 	}
-	my $order = $authorship->attribution_order;
-	$max_order = $order
-	    if $max_order < $order;
     }
 
     # Add the thing.
     my $dbh = $q->connect_to_database();
-    $dbh->do(q{insert into book_author_map
- 	           (author_id, book_id, attribution_order)
- 	       values (?, ?, ?)},
-	     undef, $author_id, $self->book_id, $max_order + 1)
-	or die $dbh->errstr;
-    my $return_address = $q->oligo_query($caller, message => 'Author added');
+    for my $author_id (@author_ids) {
+	$dbh->do(q{insert into book_author_map
+ 	               (author_id, book_id, attribution_order)
+	           values (?, ?, ?)},
+		 undef, $author_id, $self->book_id, $max_order + 1)
+	    or die $dbh->errstr;
+    }
+    my $n_authors = scalar(@author_ids);
+    my $message = ($n_authors == 1
+		   ? 'One new author added.'
+		   : "$n_authors authors added.");
+    my $return_address = $q->oligo_query($caller, message => $message);
     print $q->redirect($return_address);
 }
 
