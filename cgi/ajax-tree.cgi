@@ -26,7 +26,8 @@ __END__
 
 =head1 DESCRIPTION
 
-Search for a location in the database.
+AJAX support for location hierarchy browsing.  A user would see this
+page only in case of a bug or an error.
 
 =cut
 
