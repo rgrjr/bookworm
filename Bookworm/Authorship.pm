@@ -66,6 +66,18 @@ my @field_descriptors
 
 sub local_display_fields { return \@field_descriptors };
 
+sub post_web_update {
+    # Supply a "[Back ...]" link.
+    my ($self, $q) = @_;
+
+    my $authorship_link
+	= $q->a({ href => $q->oligo_query('book-authorship.cgi',
+					  book_id => $self->book_id) },
+		$q->escapeHTML('[Back to '
+			       . $self->book->title . ' authorship]'));
+    return $q->ul($q->li($authorship_link));
+}
+
 1;
 
 __END__
