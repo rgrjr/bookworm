@@ -7,8 +7,6 @@
 --
 --    mysql -p -u bookworm test_bookworm < database/schema.sql
 --
--- $Id: modest-schema.sql 7036 2011-01-29 22:49:31Z rogers $
---
 
 create table author (
   author_id int(11) NOT NULL auto_increment,
