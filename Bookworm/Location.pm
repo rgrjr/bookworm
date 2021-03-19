@@ -155,6 +155,11 @@ sub post_web_update {
 	$url = $q->oligo_query('move-books.cgi',
 			       location_id => $self->location_id);
 	push(@links, $q->a({ href => $url }, '[Move book(s) here]'));
+	unless (@{$self->location_children} || @{$self->book_children}) {
+	    $url = $q->oligo_query('delete-location.cgi',
+				   location_id => $self->location_id);
+	    push(@links, $q->a({ href => $url }, '[Delete location]'));
+	}
     }
     $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
@@ -296,6 +301,58 @@ sub web_move_books {
     print("</ul>\n", $q->commit_button(doit => 'Move'), ' &nbsp; ',
 	  $q->submit(doit => 'Skip'),
 	  $q->end_form(), "\n");
+    $q->_footer();
+}
+
+sub web_delete_location {
+    my ($self, $q) = @_;
+
+    # Skip if requested.
+    my $location_id = $self->location_id;
+    my $doit = $q->param('doit') || '';
+    my $error_message = '';
+    if ($doit eq 'Skip') {
+	my $return_address
+	    = $q->param('return_address') || $self->home_page_url($q);
+	my $url = $q->oligo_query($return_address,
+				  message => 'Deletion skipped.');
+	print $q->redirect($url);
+	return;
+    }
+
+    # Do error checking and execute if requested.
+    if (@{$self->location_children} || @{$self->book_children}) {
+	$error_message
+	    = 'Cannot delete a location with books or child locations.';
+    }
+    elsif (! $self->location_id) {
+	$error_message = q{Cannot delete the root location "Somewhere".};
+    }
+    elsif ($doit eq 'Delete') {
+	my $parent = $self->parent_location or die;
+	$self->delete_row();
+	my $return_address = $parent->home_page_url($q);
+	my $message = $self->html_link(undef) . ' deleted.';
+	my $url = $q->oligo_query($return_address, message => $message);
+	print $q->redirect($url);
+	return;
+    }
+
+    # Show the page.
+    $q->_header(title => 'Delete ' . $self->html_link(undef));
+    print($q->start_form(), "\n",
+	  $q->hidden(location_id => $location_id), "\n");
+    if ($error_message) {
+	print($q->h3("Cannot delete ", $self->html_link($q)), "\n");
+	print($q->p($q->b($error_message)), "\n");
+	print($q->p($q->submit(doit => 'Skip')), "\n");
+    }
+    else {
+	print($q->h3("Confirm:  Delete ", $self->html_link($q) . '?'), "\n");
+	print($q->p($q->commit_button(doit => 'Delete'), ' &nbsp; ',
+		    $q->submit(doit => 'Skip')), "\n");
+    }
+    print($q->end_form(), "\n");
     $q->_footer();
 }
 
