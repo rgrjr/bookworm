@@ -37,6 +37,10 @@ sub pretty_name { shift()->name; }
 sub home_page_name { 'location.cgi'; }
 sub search_page_name { 'find-location.cgi'; }
 
+# Enable ModGen::DB::Thing object caching.
+use vars qw(%id_to_object_cache);
+%id_to_object_cache = ();
+
 sub ancestor_of {
     # Return true iff $self contains $location.
     my ($self, $location) = @_;
@@ -51,6 +55,36 @@ sub ancestor_of {
     }
 }
 
+sub n_local_books {
+    my ($self) = @_;
+
+    if ($self->{_book_children}) {
+	# If the cache is present, don't bother asking the database.
+	return scalar(@{$self->{_book_children}});
+    }
+    else {
+	# Query the database without fetching all the books.
+	my $dbh = $self->db_connection();
+	my ($n_books) = $dbh->selectrow_array
+	    (q{select count(1) from book
+	       where location_id = ?
+	       group by '1'},
+	     undef, $self->location_id);
+	# $n_books will be undef if the select return no rows.
+	return $n_books // 0;
+    }
+}
+
+sub n_total_books {
+    my ($self) = @_;
+
+    my $total = $self->n_local_books;
+    for my $sub_location (@{$self->location_children}) {
+	$total += $sub_location->n_total_books;
+    }
+    return $total;
+}
+
 ### Web interface.
 
 my @local_display_fields
@@ -58,6 +92,7 @@ my @local_display_fields
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
 	 type => 'text' },
+       { accessor => 'n_total_books', pretty_name => 'Books' },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
 	 type => 'location_chain',
@@ -69,7 +104,7 @@ sub local_display_fields {
 }
 
 sub validate_parent_location_id {
-    my ($self, $descriptor, $new_location_id) = @_;
+    my ($self, $descriptor, $interface, $new_location_id) = @_;
 
     my $new_parent_location
 	= ($new_location_id
@@ -81,21 +116,20 @@ sub validate_parent_location_id {
     if (($old_location_id || 'none') eq ($new_location_id || 'none')) {
 	# No change.
     }
-    elsif ($self->location_id && ! $old_parent_location) {
-	# If we are in the database without a parent, then we must be the root.
-	return "Can't move the root.\n"
+    elsif ($self->root_location_p) {
+	$interface->_error("Can't move the root.\n")
 	    # Naughty, naughty.
 	    if $new_location_id;
     }
     elsif (! $new_parent_location) {
 	# It's OK to make (or leave) the parent location undefined.
-	if ($new_location_id) {
-	    "Location with ID '$new_location_id' doesn't exist.\n";
-	}
+	$interface->_error("Location with ID '$new_location_id' ",
+			   "doesn't exist.\n")
+	    if $new_location_id;
     }
     elsif ($self->ancestor_of($new_parent_location)) {
 	# Make sure we don't create a loop.
-	"Can't move a location under itself!\n";
+	$interface->_error("Can't move a location under itself!\n");
     }
 }
 
@@ -140,7 +174,13 @@ sub fetch_root {
     # Hierarchy browser support.
     my ($class) = @_;
 
-    return $class->fetch('Somewhere', key => 'name');
+    return $class->fetch(1);
+}
+
+sub root_location_p {
+    my ($self) = @_;
+
+    return ($self->location_id // 0) == 1;
 }
 
 sub post_web_update {
@@ -174,7 +214,8 @@ sub post_web_update {
 		$q->h3("$unlink contents"),
 		(@$child_locations
 		 ? ($self->present_object_content
-		       ($q, "$unlink locations", [ qw(name description) ],
+		       ($q, "$unlink locations",
+			[ qw(name n_total_books description) ],
 			$child_locations)
 		    . "<br>\n")
 		 : ''),
@@ -457,6 +498,21 @@ virtue of having their C<location_id> point to us.
 
 Returns or sets the primary key for the location.
 
+=head3 n_local_books
+
+Returns the number of books we contain, without fetching the books.
+If the books in L</book_children> are already cached, we just count
+them; otherwise, we ask the database to count them.
+
+=head3 n_total_books
+
+Returns the number of books contained locally (see L</n_local_books>)
+plus all books contained in our L</location_children> recursively.
+
+[This is potentially fairly expensive as it has to fetch all contained
+locations, but locations are cached and not so numerous as books, so
+it shouldn't be too bad.  -- rgr, 19-Mar-21.]
+
 =head3 name
 
 Returns or sets the location name.  This is not constrained to be
@@ -474,10 +530,21 @@ Returns or sets the ID of the parent location, another
 C<Bookworm::Location> instance.  When changing this, be careful not to
 create cycles.
 
+=head3 root_location_p
+
+Returns true if we are the root location, tested by checking that the
+C<location_id> is 1.  This is always true because the root location is
+installed by the F<database/schema.sql> file, and testing the
+C<location_id> rather than the name allows users to change the name.
+
 =head3 sorted_children
 
 Returns L</location_children> as a list (rather than an arrayref), to
 provide the location hierarchy browser with something to browse.
+
+=head3 validate
+
+Insist on having a parent location.
 
 =head3 validate_parent_location_id
 
@@ -485,6 +552,11 @@ Validation method used by C<web_update> to ensure that a new
 C<parent_location_id> is acceptable as a parent location, mostly that
 we're not the root and the new parent doesn't create a cycle.  See the
 L<ModGen::DB::Thing/web_update> method.
+
+=head3 web_delete_location
+
+Present a Web page that asks for confirmation before deleting an empty
+location.
 
 =head3 web_move_books
 
