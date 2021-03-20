@@ -65,6 +65,11 @@ the "Parent location:" field, described below.
 Contains free text describing the location.  For boxes of books, this
 is often about the genre, when I read them, or when I got rid of them.
 
+=item B<Books:>
+
+Displays the total number of books stored in this location.  This also
+includes books stored in all locations contained within this location.
+
 =item B<Parent location:>
 
 Shows the complete placement of this location within its parents,
