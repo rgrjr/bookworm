@@ -37,6 +37,10 @@ sub pretty_name { shift()->name; }
 sub home_page_name { 'location.cgi'; }
 sub search_page_name { 'find-location.cgi'; }
 
+# Enable ModGen::DB::Thing object caching.
+use vars qw(%id_to_object_cache);
+%id_to_object_cache = ();
+
 sub ancestor_of {
     # Return true iff $self contains $location.
     my ($self, $location) = @_;
@@ -51,6 +55,36 @@ sub ancestor_of {
     }
 }
 
+sub n_local_books {
+    my ($self) = @_;
+
+    if ($self->{_book_children}) {
+	# If the cache is present, don't bother asking the database.
+	return scalar(@{$self->{_book_children}});
+    }
+    else {
+	# Query the database without fetching all the books.
+	my $dbh = $self->db_connection();
+	my ($n_books) = $dbh->selectrow_array
+	    (q{select count(1) from book
+	       where location_id = ?
+	       group by '1'},
+	     undef, $self->location_id);
+	# $n_books will be undef if the select return no rows.
+	return $n_books // 0;
+    }
+}
+
+sub n_total_books {
+    my ($self) = @_;
+
+    my $total = $self->n_local_books;
+    for my $sub_location (@{$self->location_children}) {
+	$total += $sub_location->n_total_books;
+    }
+    return $total;
+}
+
 ### Web interface.
 
 my @local_display_fields
@@ -58,6 +92,7 @@ my @local_display_fields
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
 	 type => 'text' },
+       { accessor => 'n_total_books', pretty_name => 'Books' },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
 	 type => 'location_chain',
@@ -457,6 +492,21 @@ virtue of having their C<location_id> point to us.
 
 Returns or sets the primary key for the location.
 
+=head3 n_local_books
+
+Returns the number of books we contain, without fetching the books.
+If the books in L</book_children> are already cached, we just count
+them; otherwise, we ask the database to count them.
+
+=head3 n_total_books
+
+Returns the number of books contained locally (see L</n_local_books>)
+plus all books contained in our L</location_children> recursively.
+
+[This is potentially fairly expensive as it has to fetch all contained
+locations, but locations are cached and not so numerous as books, so
+it shouldn't be too bad.  -- rgr, 19-Mar-21.]
+
 =head3 name
 
 Returns or sets the location name.  This is not constrained to be
@@ -479,12 +529,21 @@ create cycles.
 Returns L</location_children> as a list (rather than an arrayref), to
 provide the location hierarchy browser with something to browse.
 
+=head3 validate
+
+Insist on having a parent location.
+
 =head3 validate_parent_location_id
 
 Validation method used by C<web_update> to ensure that a new
 C<parent_location_id> is acceptable as a parent location, mostly that
 we're not the root and the new parent doesn't create a cycle.  See the
 L<ModGen::DB::Thing/web_update> method.
+
+=head3 web_delete_location
+
+Present a Web page that asks for confirmation before deleting an empty
+location.
 
 =head3 web_move_books
 
