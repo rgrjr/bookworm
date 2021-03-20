@@ -209,7 +209,8 @@ sub post_web_update {
 		$q->h3("$unlink contents"),
 		(@$child_locations
 		 ? ($self->present_object_content
-		       ($q, "$unlink locations", [ qw(name description) ],
+		       ($q, "$unlink locations",
+			[ qw(name n_total_books description) ],
 			$child_locations)
 		    . "<br>\n")
 		 : ''),
