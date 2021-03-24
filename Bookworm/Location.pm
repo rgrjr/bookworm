@@ -104,7 +104,7 @@ sub local_display_fields {
 }
 
 sub validate_parent_location_id {
-    my ($self, $descriptor, $new_location_id) = @_;
+    my ($self, $descriptor, $interface, $new_location_id) = @_;
 
     my $new_parent_location
 	= ($new_location_id
@@ -116,21 +116,20 @@ sub validate_parent_location_id {
     if (($old_location_id || 'none') eq ($new_location_id || 'none')) {
 	# No change.
     }
-    elsif ($self->location_id && ! $old_parent_location) {
-	# If we are in the database without a parent, then we must be the root.
-	return "Can't move the root.\n"
+    elsif ($self->root_location_p) {
+	$interface->_error("Can't move the root.\n")
 	    # Naughty, naughty.
 	    if $new_location_id;
     }
     elsif (! $new_parent_location) {
 	# It's OK to make (or leave) the parent location undefined.
-	if ($new_location_id) {
-	    "Location with ID '$new_location_id' doesn't exist.\n";
-	}
+	$interface->_error("Location with ID '$new_location_id' ",
+			   "doesn't exist.\n")
+	    if $new_location_id;
     }
     elsif ($self->ancestor_of($new_parent_location)) {
 	# Make sure we don't create a loop.
-	"Can't move a location under itself!\n";
+	$interface->_error("Can't move a location under itself!\n");
     }
 }
 
@@ -175,7 +174,13 @@ sub fetch_root {
     # Hierarchy browser support.
     my ($class) = @_;
 
-    return $class->fetch('Somewhere', key => 'name');
+    return $class->fetch(1);
+}
+
+sub root_location_p {
+    my ($self) = @_;
+
+    return ($self->location_id // 0) == 1;
 }
 
 sub post_web_update {
