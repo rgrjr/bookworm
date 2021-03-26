@@ -175,7 +175,7 @@ my @field_descriptors
 	 type => 'foreign_key', class => 'Bookworm::Publisher',
 	 edit_p => 'find-publisher.cgi' },
        { accessor => 'publication_year', pretty_name => 'Year',
-	 type => 'string' },
+	 type => 'integer' },
        { accessor => 'category', pretty_name => 'Category',
 	 type => 'enumeration',
 	 values => [ qw(fiction sf history biography satire text

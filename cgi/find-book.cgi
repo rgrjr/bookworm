@@ -62,8 +62,9 @@ Frederick P. Brooks Jr, the author of I<The Mythical Man-Month>.
 
 =item B<Year:>
 
-String match on the year of publication.  (This could stand to be
-turned into a numeric search that understands ranges.)
+Search bounds on the year of publication.  Two fields allow you to
+specify upper and lower bounds for the year in which the book was
+published.
 
 =item B<Date read:>
 
