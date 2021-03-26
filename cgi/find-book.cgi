@@ -68,10 +68,12 @@ published.
 
 =item B<Date read:>
 
-This field does a string match to the "Date read:" field.  Since there
-is no competing ID, the hyphens in dates are not treated as ranges.
-(Unfortunately that makes this search field much less useful than it
-ought to be.)
+This field does a string match to the "Date read:" field, but using
+limits.  This means that if dates are entered numerically as
+"YYYY-MM-DD", always using four digits for the year and two digits
+each for the month and day, then date strings will compare in
+chronological order, and the limits will be most effective, even if
+some dates have to be entered approximately (e.g. "1990's").
 
 =item B<Category:>
 

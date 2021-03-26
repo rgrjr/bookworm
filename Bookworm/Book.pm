@@ -162,6 +162,14 @@ sub format_authorship_field {
     return $result;
 }
 
+sub search_date_string_field {
+    # Synonym for search_integer_field.  This allows us to specify "At least"
+    # and "At most" bounds for a string-valued field.
+    my ($self, $q, $descriptor, @subs) = @_;
+
+    $self->search_integer_field($q, $descriptor, @subs);
+}
+
 my @field_descriptors
     = ({ accessor => 'book_id', verbosity => 2 },
        { accessor => 'title', pretty_name => 'Title',
@@ -181,7 +189,7 @@ my @field_descriptors
 	 values => [ qw(fiction sf history biography satire text
 		        guidebook nonfiction) ] },
        { accessor => 'date_read', pretty_name => 'Date read',
-	 type => 'string' }, 
+	 type => 'string', search_type => 'date_string' }, 
        { accessor => 'notes', pretty_name => 'Notes',
 	 type => 'text', search_field => 'book.notes' },
        { accessor => 'location_id', pretty_name => 'Location',
