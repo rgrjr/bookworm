@@ -23,6 +23,13 @@ all:
 
 install:	install-web
 
+# Must give this the right configuration file, as in:
+#
+#	MODEST_CONF=/srv/www/htdocs/bookworm/.modframe.conf make update-db
+#
+update-db:
+	${MODEST}database/install-database.pl
+
 # Build options for maintain-cgi.pl
 MAINTAIN-WEB-OPTS = --cgi-root=${bookworm-path} \
 	--script-database=${web-database} \

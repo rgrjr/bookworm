@@ -186,7 +186,7 @@ my @field_descriptors
 	 type => 'integer' },
        { accessor => 'category', pretty_name => 'Category',
 	 type => 'enumeration',
-	 values => [ qw(fiction sf history biography satire text
+	 values => [ qw(fiction history biography satire text
 		        guidebook nonfiction) ] },
        { accessor => 'date_read', pretty_name => 'Date read',
 	 type => 'string', search_type => 'date_string' }, 

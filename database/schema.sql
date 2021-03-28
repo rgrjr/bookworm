@@ -40,6 +40,16 @@ create table book_author_map (
   primary key (authorship_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+create table db_update (
+  update_id int(11) NOT NULL auto_increment,
+  major_version varchar(20) NOT NULL,
+  minor_version varchar(20) NOT NULL,
+  db_version varchar(20) NOT NULL,
+  update_time datetime NOT NULL default '0000-00-00 00:00:00',
+  staff_id mediumint(6) unsigned zerofill NOT NULL,
+  primary key (update_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 create table location (
   location_id int(11) NOT NULL auto_increment,
   name varchar(100) NOT NULL default '',
