@@ -209,6 +209,7 @@ sub post_web_update {
 	= (@$books
 	   ? $q->make_selection_op_buttons(commit => 0, 'Move books')
 	   : '');
+    my $book_presenter = @$books ? $books->[0] : $self;
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
@@ -219,14 +220,15 @@ sub post_web_update {
 			$child_locations)
 		    . "<br>\n")
 		 : ''),
-		$self->present_object_content
-		       ($q, "$unlink books",
-			[ { accessor => 'book_id', pretty_name => 'Select?',
-			    type => 'checkbox', checked_p => 0, label => ' ' },
-			  { accessor => 'title', pretty_name => 'Title',
-			    type => 'self_link' },
-			  qw(publication_year authors category notes) ],
-			$books),
+		$book_presenter->present_object_content
+		    ($q, "$unlink books",
+		     [ { accessor => 'book_id', pretty_name => 'Select?',
+			 type => 'checkbox', checked_p => 0, label => ' ' },
+		       { accessor => 'title', pretty_name => 'Title',
+			 type => 'self_link' },
+		       qw(publication_year authors category notes) ],
+		     $books,
+		     sort_p => 1),
 		$selection_buttons, "\n");
 }
 
