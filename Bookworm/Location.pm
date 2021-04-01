@@ -279,15 +279,14 @@ sub post_web_update {
 			$child_locations)
 		    . "<br>\n")
 		 : ''),
-		$book_presenter->present_object_content
+		$book_presenter->present_sorted_content
 		    ($q, "$unlink books",
 		     [ { accessor => 'book_id', pretty_name => 'Select?',
 			 type => 'checkbox', checked_p => 0, label => ' ' },
 		       { accessor => 'title', pretty_name => 'Title',
 			 type => 'self_link' },
 		       qw(publication_year authors category notes) ],
-		     $books,
-		     sort_p => 1),
+		     $books, prefix => 'book'),
 		$selection_buttons, "\n");
 }
 

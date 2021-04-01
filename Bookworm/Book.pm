@@ -73,6 +73,35 @@ sub validate {
 	unless $self->location_id;
 }
 
+sub compare_authors_arrays {
+    # $authors1 and $authors2 are arrayrefs of Bookworm::Author instances.  For
+    # sorting in the Bookworm::Location books table.
+    my ($authors1, $authors2) = @_;
+
+    my $i = 0;
+    while (1) {
+	if ($i < @$authors1 && $i < @$authors2) {
+	    my ($a1, $a2) = ($authors1->[$i], $authors2->[$i]);
+	    if ($a1->author_id != $a2->author_id) {
+		my $cmp = ($a1->last_name cmp $a2->last_name
+			   || $a1->first_name cmp $a2->first_name
+			   || $a1->mid_name cmp $a2->mid_name);
+		return $cmp
+		    if $cmp;
+	    }
+	    $i++;
+	}
+	elsif ($i >= @$authors1) {
+	    # Ran out of $authors1.
+	    return -1;
+	}
+	else {
+	    # Ran out of $authors2.
+	    return 1;
+	}
+    }
+}
+
 sub format_authors_field {
     # This is only used for display, so it is always read-only.
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
@@ -178,6 +207,7 @@ my @field_descriptors
 	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
 	 type => 'authors', order_by => '_sortable_authors',
+	 comparator => \&compare_authors_arrays,
 	 verbosity => 2 },
        { accessor => 'authorships', pretty_name => 'Authors',
 	 type => 'authorship', order_by => '_sortable_authors' },
