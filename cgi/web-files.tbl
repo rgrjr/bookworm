@@ -4,9 +4,11 @@ book.cgi	prod	cgi	Add Book	Add
 add-book-author.cgi	prod	cgi	Add Book Author
 publisher.cgi	prod	cgi	Add Publisher	Add
 author.cgi	prod	cgi	Add Author	Add
+ajax-author-sort.cgi	prod	cgi	Ajax Author Sort
 book-authorship.cgi	prod	cgi	Book Authorship
 update-authorship.cgi	prod	cgi	Update Authorship
 location.cgi	prod	cgi	Add Location	Add
+ajax-location-sort.cgi	prod	cgi	Ajax Location Sort
 move-books.cgi	prod	cgi	Move Book(s)
 find-book.cgi	prod	cgi	Find Book	Search
 find-author.cgi	prod	cgi	Find Author	Search

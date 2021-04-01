@@ -149,7 +149,8 @@ my @local_display_fields
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
-       { accessor => 'n_total_books', pretty_name => 'Books' },
+       { accessor => 'n_total_books', pretty_name => 'Books',
+	 type => 'integer', read_only_p => 1 },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
 	 type => 'location_chain',
@@ -242,6 +243,42 @@ sub root_location_p {
     return ($self->location_id // 0) == 1;
 }
 
+sub ajax_sort_content {
+    # Handle AJAX requests to sort book or location content.
+    my ($self, $q) = @_;
+
+    my $prefix = $q->param('prefix') || '';
+    my $messages = { debug => '' };
+    my $unlink = $self->html_link(undef);
+    if ($prefix eq 'locations') {
+	my $child_locations = $self->location_children;
+	$messages->{locations_content}
+	    = $self->present_sorted_content
+	        ($q, "$unlink locations",
+		 [ qw(name n_total_books description) ],
+		 $child_locations,
+		 prefix => 'locations');
+    }
+    elsif ($prefix eq 'book') {
+	my $books = $self->book_children;
+	my $book_presenter = @$books ? $books->[0] : $self;
+	$messages->{book_content}
+	    = $book_presenter->present_sorted_content
+		($q, "$unlink books",
+		 [ { accessor => 'book_id', label => ' ',
+		     pretty_name => 'Select?',
+		     type => 'checkbox', checked_p => 0 },
+		   { accessor => 'title', pretty_name => 'Title',
+		     type => 'self_link' },
+		   qw(publication_year authors category notes) ],
+		 $books, prefix => 'book');
+    }
+    else {
+	$messages->{debug} = "Unknown prefix '$prefix'.";
+    }
+    $q->send_encoded_xml($messages);
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
     require ModGen::CGI::make_selection_op_buttons;
@@ -260,7 +297,6 @@ sub post_web_update {
 	    push(@links, $q->a({ href => $url }, '[Delete location]'));
 	}
     }
-    $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
     my $child_locations = $self->location_children;
     my $books = $self->book_children;
@@ -271,23 +307,28 @@ sub post_web_update {
     my $book_presenter = @$books ? $books->[0] : $self;
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
+		$q->div({ id => 'debug' }, ''),
 		$q->h3("$unlink contents"),
-		(@$child_locations
-		 ? ($self->present_object_content
-		       ($q, "$unlink locations",
-			[ qw(name n_total_books description) ],
-			$child_locations)
-		    . "<br>\n")
-		 : ''),
-		$book_presenter->present_object_content
-		    ($q, "$unlink books",
-		     [ { accessor => 'book_id', pretty_name => 'Select?',
-			 type => 'checkbox', checked_p => 0, label => ' ' },
-		       { accessor => 'title', pretty_name => 'Title',
-			 type => 'self_link' },
-		       qw(publication_year authors category notes) ],
-		     $books,
-		     sort_p => 1),
+		$q->div({ id => 'locations_content' },
+			(@$child_locations
+			 ? ($self->present_sorted_content
+			    ($q, "$unlink locations",
+			     [ qw(name n_total_books description) ],
+			     $child_locations,
+			     prefix => 'locations', default_sort => 'name')
+			    . "<br>\n")
+			 : '')),
+		$q->div({ id => 'book_content' },
+			$book_presenter->present_sorted_content
+			    ($q, "$unlink books",
+			     [ { accessor => 'book_id', label => ' ',
+				 pretty_name => 'Select?',
+				 type => 'checkbox', checked_p => 0 },
+			       { accessor => 'title', pretty_name => 'Title',
+				 type => 'self_link' },
+			       qw(publication_year authors category notes) ],
+			     $books,
+			     prefix => 'book', default_sort => 'title:up')),
 		$selection_buttons, "\n");
 }
 
@@ -333,11 +374,26 @@ sub web_update {
 	if $message;
     my $name = $q->escapeHTML($self->pretty_name);
     my $heading = join(' ', 'Location', $self->_backgroundify($q, $name));
+
+    # Create an onSubmit trigger that supports AJAX book and location content
+    # sorting, as well as AJAX container operations on books.
+    $q->include_javascript('update-content.js');
+    $q->include_javascript('selection.js');
+    # This is what book sorting needs . . .
+    my $a1 = $q->oligo_query('ajax-location-sort.cgi', prefix => 'book');
+    my $on_submit
+	= qq{return maybe_update_sort(event, 'book', 'update', '$a1', '&')};
+    # . . . this is what location sorting needs . . .
+    my $a2 = $q->oligo_query('ajax-location-sort.cgi', prefix => 'locations');
+    $on_submit
+	.= qq{ && maybe_update_sort(event, 'locations', 'update', '$a2', '&')};
+    # . . . and this is what container operations for books need.
+    $on_submit .= q{ && submit_or_operate_on_selected(event)};
     $self->SUPER::web_update
 	($q, @options,
 	 interface => $interface,
 	 heading => $heading,
-	 onsubmit => 'return submit_or_operate_on_selected(event)');
+	 onsubmit => $on_submit);
 }
 
 sub web_move_books {
@@ -498,11 +554,25 @@ books).
 
 =head2 Accessors and methods
 
+=head3 ajax_sort_content
+
+Given a C<Bookworm::Location> and a C<ModGen::CGI> object, handles
+AJAX requests to sort book or location content.
+
 =head3 ancestor_of
 
 Given another C<Bookworm::Location> object, returns true iff self
 contains the other location.  This is used to prevent cycles by the
 user interface that moves locations.
+
+=head3 bg_color
+
+Returns or sets a string that determines the background color of the
+location name in most display contexts.  See the C<@background_colors>
+array for allowed variables.  The special value "inherit" means to use
+the location of our L</parent_location>, or no special background if
+no ancestor specifies a color.  The L</backgroundify> method
+implements the search.
 
 =head3 book_children
 
@@ -537,6 +607,11 @@ Returns or sets a free text description of the location.  This is
 usually used to describe the purpose of the location, since I tend to
 create locations that are fine-grained enough to be self-describing,
 e.g. "Somewhere >> home >> Bedroom >> BR Bookshelf >> BR BS #3".
+
+=head3 display_info
+
+Add the number of books (if we have any) to what the superclass method
+provides, used as extra information on the Location Tree page.
 
 =head3 fetch_root
 

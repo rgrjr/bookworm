@@ -136,18 +136,53 @@ my $book_columns
 	  return_address => 'book.cgi' },
 	qw(publication_year category notes date_read location_id) ];
 
+sub ajax_sort_content {
+    # Handle AJAX requests to sort our books.
+    my ($self, $q) = @_;
+
+    my $prefix = $q->param('prefix') || '';
+    my $messages = { debug => '' };
+    if ($prefix eq 'book') {
+	my $books = $self->books;
+	my $book_presenter = @$books ? $books->[0] : $self;
+	$messages->{book_content}
+	    = $book_presenter->present_sorted_content
+		($q, $self->html_link(undef) . ' books',
+		 $book_columns, $books, prefix => 'book');
+    }
+    else {
+	$messages->{debug} = "Unknown prefix '$prefix'.";
+    }
+    $q->send_encoded_xml($messages);
+}
+
+sub web_update {
+    # Add an onSubmit trigger that supports AJAX book sorting.
+    my ($self, $q, @options) = @_;
+
+    $q->include_javascript('update-content.js');
+    my $a1 = $q->oligo_query('ajax-author-sort.cgi', prefix => 'book');
+    my $on_submit
+	= qq{return maybe_update_sort(event, 'book', 'update', '$a1', '&');};
+    $self->SUPER::web_update
+	($q, @options, onsubmit => $on_submit);
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
 
-    my @stuff;
-    my $author_book_link
-	= $q->oligo_query('book.cgi', author_id => $self->author_id);
-    push(@stuff,
-	 $q->a({ href => $author_book_link }, '[Add book]'));
+    my @links;
+    my $book_link = $q->oligo_query('book.cgi', author_id => $self->author_id);
+    push(@links, $q->a({ href => $book_link }, '[Add book]'));
     my $books = $self->books;
-    join("\n", $q->ul(map { $q->li($_); } @stuff),
-	 $self->present_object_content($q, 'Books by this author',
-				       $book_columns, $books));
+    my $presenter = @$books ? $books->[0] : $self;
+    join("\n",
+	 $q->ul(map { $q->li($_); } @links),
+	 $q->div({ id => 'book_content' },
+		 $presenter->present_sorted_content
+		     ($q, 'Books by this author',
+		      $book_columns, $books,
+		      prefix => 'book', default_sort => 'title')));
 }
 
 1;
@@ -161,6 +196,11 @@ editors, ghostwriters, and translators.  Authors are primarily
 interesting in terms of the books they have written.
 
 =head2 Accessors and methods
+
+=head3 ajax_sort_content
+
+Support AJAX sorting of our books.  This is the implementation of the
+C<ajax-author-sort.cgi> page using C<present_sorted_content>.
 
 =head3 author_id
 

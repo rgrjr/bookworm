@@ -73,6 +73,40 @@ sub validate {
 	unless $self->location_id;
 }
 
+sub compare_authors_arrays {
+    # $authors1 and $authors2 are arrayrefs of Bookworm::Author instances.  For
+    # sorting in the Bookworm::Location books table.
+    my ($authors1, $authors2) = @_;
+
+    my $i = 0;
+    while (1) {
+	if ($i < @$authors1) {
+	    if ($i < @$authors2) {
+		# Compare the $i^{th} authors.
+		my ($a1, $a2) = ($authors1->[$i], $authors2->[$i]);
+		if ($a1->author_id != $a2->author_id) {
+		    my $cmp = ($a1->last_name cmp $a2->last_name
+			       || $a1->first_name cmp $a2->first_name
+			       || $a1->mid_name cmp $a2->mid_name);
+		    return $cmp
+			if $cmp;
+		}
+		# Same authors.
+		$i++;
+	    }
+	    else {
+		# Ran out of $authors2, which is therefore a prefix, so
+		# $authors1 is greater than $authors2.
+		return 1;
+	    }
+	}
+	else {
+	    # Ran out of $authors1.
+	    return $i < @$authors2 ? -1 : 0;
+	}
+    }
+}
+
 sub format_authors_field {
     # This is only used for display, so it is always read-only.
     my ($self, $q, $descriptor, $cgi_param, $read_only_p, $value) = @_;
@@ -178,6 +212,7 @@ my @field_descriptors
 	 type => 'string', size => 50 },
        { accessor => 'authors', pretty_name => 'Authors',
 	 type => 'authors', order_by => '_sortable_authors',
+	 comparator => \&compare_authors_arrays,
 	 verbosity => 2 },
        { accessor => 'authorships', pretty_name => 'Authors',
 	 type => 'authorship', order_by => '_sortable_authors' },
@@ -404,6 +439,12 @@ Synonym for the L</title> slot, to avoid ambiguity in C<web_update>.
 Returns or sets the book category, e.g. fiction, biography.  This is
 implemented as an enumeration in the schema and the user interface.
 
+=head3 compare_authors_arrays
+
+Given two arrayrefs of C<Bookworm::Author> instances, return -1, 0, or
+1 to reflect their proper sort ort.  For sorting in the
+C<Bookworm::Location> books table.
+
 =head3 contained_item_class
 
 Returns the string 'Bookworm::Authorship', which enables books to act
@@ -521,6 +562,12 @@ notes.)
 Returns or sets the ID of the C<Bookworm::Publisher>.  Note that there
 is no fetch accessor for the publisher, because we don't do much with
 publishers.
+
+=head3 search_date_string_field
+
+Synonym for C<search_integer_field>.  This allows us to specify "At
+least" and "At most" bounds for a string-valued field that happends to
+represent a date.
 
 =head3 title
 
