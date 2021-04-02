@@ -243,6 +243,42 @@ sub root_location_p {
     return ($self->location_id // 0) == 1;
 }
 
+sub ajax_sort_content {
+    # Handle AJAX requests to sort book or location content.
+    my ($self, $q) = @_;
+
+    my $prefix = $q->param('prefix') || '';
+    my $messages = { debug => '' };
+    my $unlink = $self->html_link(undef);
+    if ($prefix eq 'locations') {
+	my $child_locations = $self->location_children;
+	$messages->{locations_content}
+	    = $self->present_sorted_content
+	        ($q, "$unlink locations",
+		 [ qw(name n_total_books description) ],
+		 $child_locations,
+		 prefix => 'locations');
+    }
+    elsif ($prefix eq 'book') {
+	my $books = $self->book_children;
+	my $book_presenter = @$books ? $books->[0] : $self;
+	$messages->{book_content}
+	    = $book_presenter->present_sorted_content
+		($q, "$unlink books",
+		 [ { accessor => 'book_id', label => ' ',
+		     pretty_name => 'Select?',
+		     type => 'checkbox', checked_p => 0 },
+		   { accessor => 'title', pretty_name => 'Title',
+		     type => 'self_link' },
+		   qw(publication_year authors category notes) ],
+		 $books, prefix => 'book');
+    }
+    else {
+	$messages->{debug} = "Unknown prefix '$prefix'.";
+    }
+    $q->send_encoded_xml($messages);
+}
+
 sub post_web_update {
     my ($self, $q) = @_;
     require ModGen::CGI::make_selection_op_buttons;
@@ -272,23 +308,27 @@ sub post_web_update {
     my $book_presenter = @$books ? $books->[0] : $self;
     return join("\n",
 		$q->ul(map { $q->li($_); } @links),
+		$q->div({ id => 'debug' }, ''),
 		$q->h3("$unlink contents"),
-		(@$child_locations
-		 ? ($self->present_sorted_content
-		       ($q, "$unlink locations",
-			[ qw(name n_total_books description) ],
-			$child_locations,
-		       prefix => 'locations')
-		    . "<br>\n")
-		 : ''),
-		$book_presenter->present_sorted_content
-		    ($q, "$unlink books",
-		     [ { accessor => 'book_id', pretty_name => 'Select?',
-			 type => 'checkbox', checked_p => 0, label => ' ' },
-		       { accessor => 'title', pretty_name => 'Title',
-			 type => 'self_link' },
-		       qw(publication_year authors category notes) ],
-		     $books, prefix => 'book'),
+		$q->div({ id => 'locations_content' },
+			(@$child_locations
+			 ? ($self->present_sorted_content
+			    ($q, "$unlink locations",
+			     [ qw(name n_total_books description) ],
+			     $child_locations,
+			     prefix => 'locations')
+			    . "<br>\n")
+			 : '')),
+		$q->div({ id => 'book_content' },
+			$book_presenter->present_sorted_content
+			    ($q, "$unlink books",
+			     [ { accessor => 'book_id', label => ' ',
+				 pretty_name => 'Select?',
+				 type => 'checkbox', checked_p => 0 },
+			       { accessor => 'title', pretty_name => 'Title',
+				 type => 'self_link' },
+			       qw(publication_year authors category notes) ],
+			     $books, prefix => 'book')),
 		$selection_buttons, "\n");
 }
 
@@ -334,11 +374,25 @@ sub web_update {
 	if $message;
     my $name = $q->escapeHTML($self->pretty_name);
     my $heading = join(' ', 'Location', $self->_backgroundify($q, $name));
+
+    # Create an onSubmit trigger that supports AJAX book and location content
+    # sorting, as well as AJAX container operations on books.
+    $q->include_javascript('update-content.js');
+    # This is what book sorting needs . . .
+    my $a1 = $q->oligo_query('ajax-location-sort.cgi', prefix => 'book');
+    my $on_submit
+	= qq{return maybe_update_sort(event, 'book', 'update', '$a1', '&')};
+    # . . . this is what location sorting needs . . .
+    my $a2 = $q->oligo_query('ajax-location-sort.cgi', prefix => 'locations');
+    $on_submit
+	.= qq{ && maybe_update_sort(event, 'locations', 'update', '$a2', '&')};
+    # . . . and this is what container operations for books need.
+    $on_submit .= q{ && submit_or_operate_on_selected(event)};
     $self->SUPER::web_update
 	($q, @options,
 	 interface => $interface,
 	 heading => $heading,
-	 onsubmit => 'return submit_or_operate_on_selected(event)');
+	 onsubmit => $on_submit);
 }
 
 sub web_move_books {
