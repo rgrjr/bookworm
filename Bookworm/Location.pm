@@ -149,7 +149,8 @@ my @local_display_fields
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
-       { accessor => 'n_total_books', pretty_name => 'Books' },
+       { accessor => 'n_total_books', pretty_name => 'Books',
+	 type => 'integer', read_only_p => 1 },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
 	 type => 'location_chain',
@@ -273,10 +274,11 @@ sub post_web_update {
 		$q->ul(map { $q->li($_); } @links),
 		$q->h3("$unlink contents"),
 		(@$child_locations
-		 ? ($self->present_object_content
+		 ? ($self->present_sorted_content
 		       ($q, "$unlink locations",
 			[ qw(name n_total_books description) ],
-			$child_locations)
+			$child_locations,
+		       prefix => 'locations')
 		    . "<br>\n")
 		 : ''),
 		$book_presenter->present_sorted_content
