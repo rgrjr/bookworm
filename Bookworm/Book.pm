@@ -80,24 +80,29 @@ sub compare_authors_arrays {
 
     my $i = 0;
     while (1) {
-	if ($i < @$authors1 && $i < @$authors2) {
-	    my ($a1, $a2) = ($authors1->[$i], $authors2->[$i]);
-	    if ($a1->author_id != $a2->author_id) {
-		my $cmp = ($a1->last_name cmp $a2->last_name
-			   || $a1->first_name cmp $a2->first_name
-			   || $a1->mid_name cmp $a2->mid_name);
-		return $cmp
-		    if $cmp;
+	if ($i < @$authors1) {
+	    if ($i < @$authors2) {
+		# Compare the $i^{th} authors.
+		my ($a1, $a2) = ($authors1->[$i], $authors2->[$i]);
+		if ($a1->author_id != $a2->author_id) {
+		    my $cmp = ($a1->last_name cmp $a2->last_name
+			       || $a1->first_name cmp $a2->first_name
+			       || $a1->mid_name cmp $a2->mid_name);
+		    return $cmp
+			if $cmp;
+		}
+		# Same authors.
+		$i++;
 	    }
-	    $i++;
-	}
-	elsif ($i >= @$authors1) {
-	    # Ran out of $authors1.
-	    return -1;
+	    else {
+		# Ran out of $authors2, which is therefore a prefix, so
+		# $authors1 is greater than $authors2.
+		return 1;
+	    }
 	}
 	else {
-	    # Ran out of $authors2.
-	    return 1;
+	    # Ran out of $authors1.
+	    return $i < @$authors2 ? -1 : 0;
 	}
     }
 }
