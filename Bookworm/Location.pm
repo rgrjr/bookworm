@@ -316,7 +316,7 @@ sub post_web_update {
 			    ($q, "$unlink locations",
 			     [ qw(name n_total_books description) ],
 			     $child_locations,
-			     prefix => 'locations')
+			     prefix => 'locations', default_sort => 'name')
 			    . "<br>\n")
 			 : '')),
 		$q->div({ id => 'book_content' },
@@ -328,7 +328,8 @@ sub post_web_update {
 			       { accessor => 'title', pretty_name => 'Title',
 				 type => 'self_link' },
 			       qw(publication_year authors category notes) ],
-			     $books, prefix => 'book')),
+			     $books,
+			     prefix => 'book', default_sort => 'title:up')),
 		$selection_buttons, "\n");
 }
 
