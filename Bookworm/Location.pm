@@ -297,7 +297,6 @@ sub post_web_update {
 	    push(@links, $q->a({ href => $url }, '[Delete location]'));
 	}
     }
-    $q->include_javascript('selection.js');
     my $unlink = $self->html_link(undef);
     my $child_locations = $self->location_children;
     my $books = $self->book_children;
@@ -379,6 +378,7 @@ sub web_update {
     # Create an onSubmit trigger that supports AJAX book and location content
     # sorting, as well as AJAX container operations on books.
     $q->include_javascript('update-content.js');
+    $q->include_javascript('selection.js');
     # This is what book sorting needs . . .
     my $a1 = $q->oligo_query('ajax-location-sort.cgi', prefix => 'book');
     my $on_submit
