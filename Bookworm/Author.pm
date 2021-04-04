@@ -139,15 +139,15 @@ my $book_columns
 sub post_web_update {
     my ($self, $q) = @_;
 
-    my @stuff;
-    my $author_book_link
-	= $q->oligo_query('book.cgi', author_id => $self->author_id);
-    push(@stuff,
-	 $q->a({ href => $author_book_link }, '[Add book]'));
+    my @links;
+    my $book_link = $q->oligo_query('book.cgi', author_id => $self->author_id);
+    push(@links, $q->a({ href => $book_link }, '[Add book]'));
     my $books = $self->books;
-    join("\n", $q->ul(map { $q->li($_); } @stuff),
-	 $self->present_object_content($q, 'Books by this author',
-				       $book_columns, $books));
+    my $presenter = @$books ? $books->[0] : $self;
+    join("\n", $q->ul(map { $q->li($_); } @links),
+	 $presenter->present_sorted_content($q, 'Books by this author',
+					    $book_columns, $books,
+					    default_sort => 'title'));
 }
 
 1;
