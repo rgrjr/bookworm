@@ -20,7 +20,9 @@ Update the authorship of a book.
 =head2 About authorship
 
 Each author, editor, or translator has a row in the table that is the
-central feature of the page.  The row contains the author's name,
+central feature of the page.  They are not sortable because they are always
+shown in their "presentation order," which is explained in detail below.
+The row contains the author's name,
 order of presentation, and role; the name is a link to a page that
 allows you to pick new values for the order and role.  The "To top",
 "To bottom", and "Renumber" buttons below the table also reorder the
@@ -45,8 +47,14 @@ happens regardless of author role.
 
 =head2 Presentation of author information
 
-When authors are presented, two authors are joined by " and ", and
-three or more authors are joined by ", ".  Here are a few real
+The principal feature of this page is that it gives control over how
+authors, editors, and translators are presented, both in terms of
+order and attribution.  Authors are always sorted first by role,
+with "author", "editor", "translator", and "with" authors appearing in
+that order, and then by their order.
+
+When multiple authors with the same role are presented, two are joined
+by " and ", and three or more are joined by ", ".  Here are a few real
 examples (title on the first line, authorship on the second):
 
 	Shadow of the Lion, The
@@ -57,7 +65,7 @@ One or more "with" authors are always shown after the "author" authors:
 	Within Reach: My Everest Story
 	Mark Pfetzer with Jack Galvin
 
-If there were more than one in each category, they would be separated
+If there were more than one in a given role, they would be separated
 with "and" or commas independently.
 
 For an edited collection, the name of the editor(s) are followed by

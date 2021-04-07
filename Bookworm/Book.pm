@@ -309,14 +309,16 @@ sub web_update_authorship {
 			 => 'return submit_or_operate_on_selected(event)'),
 	  $q->hidden('book_id'),
 	  "\n");
-    print($auth1->present_object_content
-	  ($q, "Authors",
-	   [ { accessor => 'authorship_id', pretty_name => 'Select?',
-	       type => 'checkbox', checked_p => 0, label => ' ' },
-	     { accessor => 'author_name', pretty_name => 'Author',
-	       type => 'self_link' },
-	     qw(attribution_order role) ],
-	   $authorships), "\n");
+    print($q->blockquote
+	  ($auth1->present_object_content
+	   ($q, "Authors",
+	    [ { accessor => 'authorship_id', pretty_name => 'Select?',
+		type => 'checkbox', checked_p => 0, label => ' ' },
+	      { accessor => 'author_name', pretty_name => 'Author',
+		type => 'self_link' },
+	      qw(role attribution_order) ],
+	    $authorships)),
+	  "\n");
     my $return_address = $q->oligo_query('book-authorship.cgi',
 					 book_id => $self->book_id);
     my $add_author = $q->oligo_query('add-book-author.cgi',
