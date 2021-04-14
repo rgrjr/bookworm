@@ -91,7 +91,7 @@ my @local_display_fields
     = ({ accessor => 'name', pretty_name => 'Location',
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
-	 type => 'text' },
+	 type => 'text', rows => 8, columns => 80 },
        { accessor => 'n_total_books', pretty_name => 'Books' },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
