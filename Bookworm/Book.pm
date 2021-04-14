@@ -301,7 +301,7 @@ sub web_update_authorship {
     }
 
     # Present the page.
-    $q->_header();
+    $q->_header(title => 'Authorship of ' . $self->html_link(undef));
     print($q->h2('Authorship of ', $self->html_link($q)), "\n");
     my $authorships = $self->authorships;
     my $auth1 = $authorships->[0] || $self;
