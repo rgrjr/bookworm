@@ -8,3 +8,9 @@ alter table book
     change category
 	category enum('fiction', 'history', 'biography', 'satire',
 		      'text', 'guidebook', 'nonfiction');
+
+--- Rev 2:  Add "reference" to the book.category enum.
+alter table book
+    change category
+	category enum('fiction', 'biography', 'guidebook', 'history',
+	 	      'nonfiction', 'reference', 'satire', 'text');
