@@ -4,8 +4,9 @@
 #
 
 # install tools
-modest-dir = /scratch/rogers/modest
-MODEST = perl -Mlib=${modest-dir} ${modest-dir}/
+modframe-dir = /scratch/rogers/modframe
+MODFRAME = perl -Mlib=${modframe-dir} ${modframe-dir}/
+MAINTAIN-CGI = ${MODFRAME}bin/maintain-cgi.pl
 # Web file database
 web-database = cgi/web-files.tbl
 # server-prefix is the server-root relative URL path, which is used to construct
@@ -15,8 +16,8 @@ server-prefix = bookworm
 bookworm-path = /srv/www/htdocs/${server-prefix}
 
 RELEASE = 0.1
-# This is the number of the compatible MODEST release.
-MODEST_RELEASE = 2.29
+# This is the number of the compatible MODFRAME release.
+MODFRAME_RELEASE = 3.7
 
 all:
 	@echo Nobody here but us scripts.
@@ -38,17 +39,17 @@ install:	install-web
 
 # Must give this the right configuration file, as in:
 #
-#	MODEST_CONF=/srv/www/htdocs/bookworm/.modframe.conf make update-db
+#	MODFRAME_CONF=/srv/www/htdocs/bookworm/.modframe.conf make update-db
 #
 update-db:
-	${MODEST}database/install-database.pl
+	${MODFRAME}database/install-database.pl
 
 # Build options for maintain-cgi.pl
 MAINTAIN-WEB-OPTS = --cgi-root=${bookworm-path} \
 	--script-database=${web-database} \
-	--script-directory=cgi --script-directory=${modest-dir}/public_html \
+	--script-directory=cgi --script-directory=${modframe-dir}/public_html \
 	--production-include=`pwd` \
-	--hacked-include=`cd ${modest-dir} && pwd`
+	--hacked-include=`cd ${modframe-dir} && pwd`
 check-web-dirs:	cgi/web_map.tsv
 	test -d "${bookworm-path}" && test -w "${bookworm-path}"
 # Create the Web map from web-files.tbl.
@@ -69,14 +70,14 @@ cgi/web_map.tsv:	${web-database}
 	perl -ne ${transform_navmap} < ${web-database} >> $@.tmp
 	mv $@.tmp $@
 install-web:	check-web-dirs
-	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='install'
+	${MAINTAIN-CGI} ${MAINTAIN-WEB-OPTS} --oper='install'
 # Maintenance tools, intended for development.
 cmp-web:
-	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=cmp
+	${MAINTAIN-CGI} ${MAINTAIN-WEB-OPTS} --oper=cmp
 diff-web:
-	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper='diff -u'
+	${MAINTAIN-CGI} ${MAINTAIN-WEB-OPTS} --oper='diff -u'
 reverse-install-web:
-	${MODEST}bin/maintain-cgi.pl ${MAINTAIN-WEB-OPTS} --oper=reverse-install
+	${MAINTAIN-CGI} ${MAINTAIN-WEB-OPTS} --oper=reverse-install
 
 FIND-SOURCES = find . -type f | egrep '\.(p[lm]|cgi)$$' | grep -v old | sort
 ETAGS = etags --no-globals
