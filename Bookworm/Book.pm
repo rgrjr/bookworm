@@ -69,6 +69,8 @@ sub validate {
 	unless $self->title;
     $interface->_error("Books must have a publisher.\n")
 	unless $self->publisher_id;
+    $interface->_error("Books must have a location.\n")
+	unless $self->location_id;
 }
 
 sub format_authors_field {

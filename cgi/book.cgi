@@ -21,11 +21,14 @@ Add or update a book.
 =head2 About books
 
 In Bookworm, books can include all sorts of printed materials that
-have authors and/or editors and publishers.  (A publisher is required,
-but you can always create a catch-all "Samizdat" or "Self-published"
-publisher if necessary.)  A book can be created first and then have
-its author(s) added to it, or the author created first and then add
-the book(s).
+have authors and/or editors and publishers.  A book can be created
+first and then have its author(s) added to it (so named authors and/or
+editors are not strictly necessary), or the author created first and
+then add the book(s).  Either way, the book must have a title, a
+publisher, and a location before it can be entered into the database.
+(You can always create a catch-all "Samizdat" or "Self-published"
+publisher if necessary; and similarly a "Wish list" location for books
+you don't have yet.)
 
 Books have two operation links at the bottom of the page:  "[Add
 similar book]" and "[Update authors]".
