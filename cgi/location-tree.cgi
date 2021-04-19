@@ -13,14 +13,10 @@ use lib '.'; ### hack ###
 
 use ModGen::CGI;
 use Bookworm::Location;
-use ModGen::DB::Thing::web_hierarchical_browser;
-
-# [kludge to get MODEST to use our class.  -- rgr, 28-Jan-17.]
-$ModGen::DB::Thing::kind_to_class_and_cookie{bookworm_location}
-    = [ qw(Bookworm::Location bookworm_open_locations) ];
 
 my $q = ModGen::CGI->new();
-Bookworm::Location->web_hierarchical_browser($q, kind => 'bookworm_location');
+Bookworm::Location->web_hierarchical_browser
+    ($q, cookie_name => 'bookworm_open_locations');
 
 __END__
 

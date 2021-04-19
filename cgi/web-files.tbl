@@ -17,7 +17,6 @@ delete-location.cgi	prod	cgi	Delete Location
 styles/cssmenu.css	prod	css
 styles/main.css	prod	css
 ajax-last-chosen.cgi	prod	cgi	Last Chosen
-ajax-tree.cgi	prod	cgi	Tree
 images/help_sm.png	prod	image
 javascript/modest.js	prod	javascript
 javascript/newcssmenu.js	prod	javascript
