@@ -240,10 +240,7 @@ sub web_update {
 						query => $q);
     my $message;
     my $doit = $q->param('doit') || '';
-    if ($self->handle_container_selection($q)) {
-	# Already done.
-    }
-    elsif (! $doit) {
+    if (! $doit) {
     }
     elsif ($doit eq 'confirm_move' || $doit eq 'Move') {
 	$self->move_or_delete_items($q, $interface);
