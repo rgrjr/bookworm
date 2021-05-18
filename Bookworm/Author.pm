@@ -132,7 +132,7 @@ sub web_search {
 
 my $book_columns
     = [ { accessor => 'title', pretty_name => 'Book',
-	  type => 'return_address_link',
+	  type => 'self_link',
 	  return_address => 'book.cgi' },
 	qw(publication_year category notes date_read location_id) ];
 
