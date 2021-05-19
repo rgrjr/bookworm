@@ -85,6 +85,44 @@ sub n_total_books {
     return $total;
 }
 
+# This allows the text to be seen more easily.
+my %pastel_from_color
+    = (grey => '#bbb',
+       yellow => '#ffc',
+       orange => '#fec',
+       red => '#fcc',
+       purple => '#fcf',
+       blue => '#ccf',
+       aqua => '#cff',
+       green => '#cfc');
+my @background_colors = ('inherit', keys(%pastel_from_color));
+
+sub html_link {
+    # Wrap a span with our background color, if we don't inherit the browser
+    # background.
+    my ($self, $q) = @_;
+
+    my $link =  $self->SUPER::html_link($q);
+    return $link
+	unless $q;
+
+    # Find our background color.
+    my $bg_color = $self->bg_color || 'inherit';
+    if ($bg_color eq 'inherit') {
+	# Inherit from our parent.
+	my $parent = $self->parent_location;
+	while ($parent && $bg_color eq 'inherit') {
+	    $bg_color = $parent->bg_color;
+	    $parent = $parent->parent_location;
+	}
+    }
+    return $link
+	# No color (which is the global default).
+	if $bg_color eq 'inherit';
+    $bg_color = $pastel_from_color{$bg_color} || $bg_color;
+    return $q->span({ style => "background: $bg_color;" }, $link);
+}
+
 ### Web interface.
 
 my @local_display_fields
@@ -92,6 +130,9 @@ my @local_display_fields
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
 	 type => 'text', rows => 8, columns => 80 },
+       { accessor => 'bg_color', pretty_name => 'Background',
+	 type => 'enumeration',
+	 values => \@background_colors },
        { accessor => 'n_total_books', pretty_name => 'Books' },
        { accessor => 'parent_location_id', pretty_name => 'Parent location',
 	 edit_p => 'find-location.cgi',
@@ -183,43 +224,6 @@ sub root_location_p {
     my ($self) = @_;
 
     return ($self->location_id // 0) == 1;
-}
-
-# This allows the text to be seen more easily.
-my %pastel_from_color
-    = (grey => '#bbb',
-       yellow => '#ffc',
-       orange => '#fec',
-       red => '#fcc',
-       purple => '#fcf',
-       blue => '#ccf',
-       aqua => '#cff',
-       green => '#cfc');
-
-sub html_link {
-    # Wrap a span with our background color, if we don't inherit the browser
-    # background.
-    my ($self, $q) = @_;
-
-    my $link =  $self->SUPER::html_link($q);
-    return $link
-	unless $q;
-
-    # Find our background color.
-    my $bg_color = $self->bg_color || 'inherit';
-    if ($bg_color eq 'inherit') {
-	# Inherit from our parent.
-	my $parent = $self->parent_location;
-	while ($parent && $bg_color eq 'inherit') {
-	    $bg_color = $parent->bg_color;
-	    $parent = $parent->parent_location;
-	}
-    }
-    return $link
-	# No color (which is the global default).
-	if $bg_color eq 'inherit';
-    $bg_color = $pastel_from_color{$bg_color} || $bg_color;
-    return $q->span({ style => "background: $bg_color;" }, $link);
 }
 
 sub post_web_update {
