@@ -65,6 +65,21 @@ the "Parent location:" field, described below.
 Contains free text describing the location.  For boxes of books, this
 is often about the genre, when I read them, or when I got rid of them.
 
+=item B<Background:>
+
+Defines a background color for the location name when it appears in a
+mixed collection of locations, as for book search results or for the
+books by a single author.  The default background is "inherit", in
+which case the containing location's background is used; if that is
+also "inherit", then we search upward until we find some actual color.
+If the root location background is also "inherit" then we just use the
+page background color, which is usually white (unless someone has
+tweaked the global style sheet).
+
+This is meant as an aide to categorize books by location, so that it
+is easy to see at a glance where they are, if they have been given
+away, are still in storage, etc.
+
 =item B<Books:>
 
 Displays the total number of books stored in this location.  This also

@@ -12,7 +12,7 @@ use lib 'test';
 
 use Bookworm::Test;
 
-use Test::More tests => 55;
+use Test::More tests => 59;
 
 my $tester = Bookworm::Test->new();
 my $dbh = $tester->database_handle;
@@ -117,6 +117,21 @@ test_move(qw(shelf bookcase bookcase2));
 test_move('Somewhere', undef, 'shelf', 1);
 # Can't move something into something it contains.
 test_move(qw(bookcase2 room shelf), 1);
+
+## Test background color inheritance.
+my $case2 = Bookworm::Location->fetch('bookcase2', key => 'name');
+ok($case2, 'have bookcase2') or die;
+$case2->bg_color('purple');
+$case2->update();
+my $shelf2 = Bookworm::Location->fetch('shelf2', key => 'name');
+ok($shelf2, 'have shelf2') or die;
+is($shelf2->bg_color, 'inherit',
+   "the background of shelf2 is 'inherit'");
+use ModGen::CGI;
+my $query = ModGen::CGI->new();
+is($case2->_backgroundify($query, 'link'),
+   '<span style="background: #fcf;">link</span>',
+   "have purple background link");
 
 ## All done.
 $tester->clean_up;

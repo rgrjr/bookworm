@@ -14,3 +14,11 @@ alter table book
     change category
 	category enum('fiction', 'biography', 'guidebook', 'history',
 	 	      'nonfiction', 'reference', 'satire', 'text');
+
+--- Rev 3:  Add a location.bg_color column.
+alter table location
+  add column
+    bg_color enum('inherit', 'grey', 'yellow', 'orange', 'red',
+    	          'purple', 'blue', 'aqua', 'green', 'chartreuse')
+	     default 'inherit'
+  after description;
