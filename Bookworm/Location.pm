@@ -12,7 +12,7 @@ use base qw(Bookworm::Base);
 
 BEGIN {
     Bookworm::Location->build_field_accessors
-	([ qw(location_id name description parent_location_id) ]);
+	([ qw(location_id name description bg_color parent_location_id) ]);
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
     Bookworm::Location->build_set_fetch_accessor
@@ -183,6 +183,43 @@ sub root_location_p {
     my ($self) = @_;
 
     return ($self->location_id // 0) == 1;
+}
+
+# This allows the text to be seen more easily.
+my %pastel_from_color
+    = (grey => '#bbb',
+       yellow => '#ffc',
+       orange => '#fec',
+       red => '#fcc',
+       purple => '#fcf',
+       blue => '#ccf',
+       aqua => '#cff',
+       green => '#cfc');
+
+sub html_link {
+    # Wrap a span with our background color, if we don't inherit the browser
+    # background.
+    my ($self, $q) = @_;
+
+    my $link =  $self->SUPER::html_link($q);
+    return $link
+	unless $q;
+
+    # Find our background color.
+    my $bg_color = $self->bg_color || 'inherit';
+    if ($bg_color eq 'inherit') {
+	# Inherit from our parent.
+	my $parent = $self->parent_location;
+	while ($parent && $bg_color eq 'inherit') {
+	    $bg_color = $parent->bg_color;
+	    $parent = $parent->parent_location;
+	}
+    }
+    return $link
+	# No color (which is the global default).
+	if $bg_color eq 'inherit';
+    $bg_color = $pastel_from_color{$bg_color} || $bg_color;
+    return $q->span({ style => "background: $bg_color;" }, $link);
 }
 
 sub post_web_update {
