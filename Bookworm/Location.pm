@@ -33,7 +33,7 @@ BEGIN {
 
 sub table_name { 'location'; }
 sub primary_key { 'location_id'; }
-sub pretty_name { shift()->name; }
+sub pretty_name { shift()->name || 'unknown'; }
 sub home_page_name { 'location.cgi'; }
 sub search_page_name { 'find-location.cgi'; }
 
@@ -97,14 +97,10 @@ my %pastel_from_color
        green => '#cfc');
 my @background_colors = ('inherit', keys(%pastel_from_color));
 
-sub html_link {
-    # Wrap a span with our background color, if we don't inherit the browser
-    # background.
-    my ($self, $q) = @_;
-
-    my $link =  $self->SUPER::html_link($q);
-    return $link
-	unless $q;
+sub _backgroundify {
+    # Wrap the content in a span with our background color, if we don't inherit
+    # the browser background.
+    my ($self, $q, $content) = @_;
 
     # Find our background color.
     my $bg_color = $self->bg_color || 'inherit';
@@ -116,11 +112,21 @@ sub html_link {
 	    $parent = $parent->parent_location;
 	}
     }
-    return $link
+    return $content
 	# No color (which is the global default).
 	if $bg_color eq 'inherit';
     $bg_color = $pastel_from_color{$bg_color} || $bg_color;
-    return $q->span({ style => "background: $bg_color;" }, $link);
+    return $q->span({ style => "background: $bg_color;" }, $content);
+}
+
+sub html_link {
+    # Wrap the link in a span with our background color.
+    my ($self, $q) = @_;
+
+    my $link =  $self->SUPER::html_link($q);
+    return $link
+	unless $q;
+    return $self->_backgroundify($q, $link);
 }
 
 ### Web interface.
@@ -315,9 +321,12 @@ sub web_update {
     }
     $q->param(message => $message)
 	if $message;
+    my $name = $q->escapeHTML($self->pretty_name);
+    my $heading = join(' ', 'Location', $self->_backgroundify($q, $name));
     $self->SUPER::web_update
 	($q, @options,
 	 interface => $interface,
+	 heading => $heading,
 	 onsubmit => 'return submit_or_operate_on_selected(event)');
 }
 
