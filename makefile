@@ -22,6 +22,13 @@ MODFRAME_RELEASE = 3.7
 all:
 	@echo Nobody here but us scripts.
 
+test:	test-database
+
+test-database:		cgi/web_map.tsv
+	perl -Mlib=. -Mlib=${modframe-dir} \
+		    -MTest::Harness -e 'runtests(@ARGV);' \
+		${modframe-dir}/test/database/test-install-database.pl
+
 install:	install-web
 
 # Must give this the right configuration file, as in:
