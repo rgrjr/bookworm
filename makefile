@@ -21,6 +21,19 @@ MODEST_RELEASE = 2.29
 all:
 	@echo Nobody here but us scripts.
 
+test:	test-database
+
+test-database:		cgi/web_map.tsv
+	HARNESS_EXTRA_LIBS=${modframe-dir}:${modframe-dir}/test \
+	    perl -Mlib=. -Mlib=${modframe-dir} \
+		    -MTest::Harness -e 'runtests(@ARGV);' \
+		${modframe-dir}/test/database/test-install-database.pl \
+		test/location-1.pl \
+		test/publisher-1.pl \
+		test/author-1.pl \
+		test/book-*.pl \
+		test/check-foreign-keys.pl
+
 install:	install-web
 
 # Must give this the right configuration file, as in:
