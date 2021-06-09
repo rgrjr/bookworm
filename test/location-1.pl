@@ -11,7 +11,8 @@ use warnings;
 use lib 'test';
 
 use Bookworm::Test;
-use Test::More tests => 18;
+
+use Test::More tests => 21;
 
 my $tester = Bookworm::Test->new();
 my $test_transcript_file = $tester->test_transcript_file;
@@ -86,10 +87,12 @@ ok($root, "have location root")
 			    name => $loc_name,
 			    parent_location_id => $parent_id,
 			    description => "Test $loc_name");
-	# We don't need to check the output or the database, because it is
-	# sufficient that this "fetch" succeed.
-	$container = Bookworm::Location->fetch($loc_name, key => 'name');
-	ok($container, "created location '$loc_name'");
+	# We don't need to check the output, because it is sufficient that this
+	# "fetch" succeed, and that it has the right parent.
+	my $new = Bookworm::Location->fetch($loc_name, key => 'name');
+	ok($new, "created location '$loc_name'");
+	check_locations($container->name, $loc_name);
+	$container = $new;
     }
 }
 
