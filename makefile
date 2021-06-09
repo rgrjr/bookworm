@@ -25,9 +25,11 @@ all:
 test:	test-database
 
 test-database:		cgi/web_map.tsv
-	perl -Mlib=. -Mlib=${modframe-dir} \
+	HARNESS_EXTRA_LIBS=${modframe-dir}:${modframe-dir}/test \
+	    perl -Mlib=. -Mlib=${modframe-dir} \
 		    -MTest::Harness -e 'runtests(@ARGV);' \
-		${modframe-dir}/test/database/test-install-database.pl
+		${modframe-dir}/test/database/test-install-database.pl \
+		test/location-1.pl
 
 install:	install-web
 
