@@ -12,7 +12,7 @@ use lib 'test';
 
 use Bookworm::Test;
 
-use Test::More tests => 21;
+use Test::More tests => 38;
 
 my $tester = Bookworm::Test->new();
 my $test_transcript_file = $tester->test_transcript_file;
@@ -44,43 +44,13 @@ sub check_locations {
     }
 }
 
-sub test_failing_move {
-    # 5 "ok" calls per invocation.
-    my ($moved_name, $old_loc_name, $new_loc_name) = @_;
+sub create_contained_locations {
+    # Create a series of locations, the first one under the specified root, the
+    # next one under the first, and so on.
+    my ($root, @names) = @_;
 
-    my $moved = Bookworm::Location->fetch($moved_name, key => 'name');
-    ok($moved, "have $moved_name")
-	or return;
-    check_locations($old_loc_name, $moved_name);
-    my $new = Bookworm::Location->fetch($new_loc_name, key => 'name');
-    ok($new, "have $new_loc_name")
-	or return;
-    $tester->run_script('cgi/location.cgi',
-			location_id => $moved->location_id,
-			parent_location_id => $new->location_id,
-			doit => 'Update');
-    check_locations($old_loc_name, $moved_name);
-}
-
-### Main code.
-
-use_ok('Bookworm::Location');
-
-## Get rid of these test locations.
-my @location_names = ('room', 'bookcase', 'shelf');
-for my $loc_name (@location_names) {
-    my $loc = Bookworm::Location->fetch($loc_name, key => 'name');
-    $loc->destroy_utterly()
-	if $loc;
-}
-
-## Create some locations.
-my $root = Bookworm::Location->fetch_root();
-ok($root, "have location root")
-    or die;
-{
     my $container = $root;
-    for my $loc_name (@location_names) {
+    for my $loc_name (@names) {
 	my $parent_id = $container->location_id;
 	$tester->run_script('cgi/location.cgi',
 			    doit => 'Insert',
@@ -96,11 +66,54 @@ ok($root, "have location root")
     }
 }
 
+sub test_move {
+    # 5 "ok" calls per invocation.
+    my ($moved_name, $old_loc_name, $new_loc_name, $fail_p) = @_;
+
+    my $moved = Bookworm::Location->fetch($moved_name, key => 'name');
+    ok($moved, "have $moved_name")
+	or return;
+    check_locations($old_loc_name, $moved_name);
+    my $new = Bookworm::Location->fetch($new_loc_name, key => 'name');
+    ok($new, "have $new_loc_name")
+	or return;
+    $tester->run_script('cgi/location.cgi',
+			location_id => $moved->location_id,
+			parent_location_id => $new->location_id,
+			doit => 'Update');
+    check_locations($fail_p ? $old_loc_name : $new_loc_name, $moved_name);
+}
+
+### Main code.
+
+use_ok('Bookworm::Location');
+
+## Get rid of these test locations.
+my @location_names = ('room', 'bookcase', 'shelf');
+for my $loc_name (@location_names, qw(bookcase2 shelf2)) {
+    my $loc = Bookworm::Location->fetch($loc_name, key => 'name');
+    $loc->destroy_utterly()
+	if $loc;
+}
+
+## Create some locations.
+my $root = Bookworm::Location->fetch_root();
+ok($root, "have location root")
+    or die;
+create_contained_locations($root, @location_names);
+my $room = Bookworm::Location->fetch('room', key => 'name');
+ok($room, 'have room') or die;
+create_contained_locations($room, qw(bookcase2 shelf2));
+
+## Test some moves.
+test_move(qw(shelf2 bookcase2 bookcase));
+test_move(qw(shelf bookcase bookcase2));
+
 ## Test some moves that should not work.
 # Can't move the root.
-test_failing_move('Somewhere', undef, 'shelf');
+test_move('Somewhere', undef, 'shelf', 1);
 # Can't move something into something it contains.
-test_failing_move(qw(bookcase room shelf));
+test_move(qw(bookcase2 room shelf), 1);
 
 ## All done.
 $tester->clean_up;
