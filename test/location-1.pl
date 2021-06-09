@@ -11,7 +11,7 @@ use warnings;
 use lib 'test';
 
 use Bookworm::Test;
-use Test::More tests => 8;
+use Test::More tests => 18;
 
 my $tester = Bookworm::Test->new();
 my $test_transcript_file = $tester->test_transcript_file;
@@ -22,56 +22,43 @@ my $dbh = $tester->database_handle;
 sub check_locations {
     # It is safer to use SQL to check the state in the database, since that
     # will not be confused by local caching.
-    my $desired_location_barcode = shift;
+    my $desired_location_name = shift;
 
-    my $select_base = q(select loc2.barcode
-			from storage_location as loc1
-			     join storage_location as loc2 on
+    my $select_base = q(select loc2.name
+			from location as loc1
+			     join location as loc2 on
 			          loc1.parent_location_id = loc2.location_id);
-    for my $barcode (@_) {
-	my ($parent_barcode)
+    for my $name (@_) {
+	my ($parent_name)
 	    = $dbh->selectrow_array(qq($select_base
-				       where loc1.barcode = '$barcode'));
-	if ($desired_location_barcode) {
-	    ok($parent_barcode eq $desired_location_barcode,
-	       "Location $barcode should be in '$desired_location_barcode'.");
+				       where loc1.name = '$name'));
+	if ($desired_location_name) {
+	    ok($parent_name eq $desired_location_name,
+	       "Location $name should be in '$desired_location_name'.");
 	}
 	else {
-	    ok(! $parent_barcode,
-	       "Location $barcode should not have a location.");
+	    ok(! $parent_name,
+	       "Location $name should not have a location.");
 	}
     }
 }
 
 sub test_failing_move {
-    # 8 "ok" calls per invocation, or 5 if $old_loc_barcode is undef.
-    my ($moved_barcode, $old_loc_barcode, $new_loc_barcode) = @_;
+    # 5 "ok" calls per invocation.
+    my ($moved_name, $old_loc_name, $new_loc_name) = @_;
 
-    my $moved = Bookworm::Location->fetch_barcode($moved_barcode);
-    ok($moved, "have $moved_barcode")
+    my $moved = Bookworm::Location->fetch($moved_name, key => 'name');
+    ok($moved, "have $moved_name")
 	or return;
-    check_locations($old_loc_barcode, $moved_barcode);
-    my $new = Bookworm::Location->fetch_barcode($new_loc_barcode);
-    ok($new, "have $new_loc_barcode")
+    check_locations($old_loc_name, $moved_name);
+    my $new = Bookworm::Location->fetch($new_loc_name, key => 'name');
+    ok($new, "have $new_loc_name")
 	or return;
-    $tester->run_script('public_html/location/view-location.cgi',
+    $tester->run_script('cgi/location.cgi',
 			location_id => $moved->location_id,
 			parent_location_id => $new->location_id,
 			doit => 'Update');
-    check_locations($old_loc_barcode, $moved_barcode);
-
-    # Now test moving via the web_update multiple "Move to new ..." interface.
-    return
-	unless $old_loc_barcode;
-    my $old = Bookworm::Location->fetch_barcode($old_loc_barcode);
-    ok($old, "have $old_loc_barcode")
-	or return;
-    $tester->run_script('public_html/location/view-location.cgi',
-			location_id => $old->location_id,
-			child_location_id => $moved->location_id,
-			destination_container_id => $new->location_id,
-			doit => 'Move');
-    check_locations($old_loc_barcode, $moved_barcode);
+    check_locations($old_loc_name, $moved_name);
 }
 
 ### Main code.
@@ -105,6 +92,12 @@ ok($root, "have location root")
 	ok($container, "created location '$loc_name'");
     }
 }
+
+## Test some moves that should not work.
+# Can't move the root.
+test_failing_move('Somewhere', undef, 'shelf');
+# Can't move something into something it contains.
+test_failing_move(qw(bookcase room shelf));
 
 ## All done.
 $tester->clean_up;
