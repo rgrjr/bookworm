@@ -12,7 +12,7 @@ use lib 'test';
 
 use Bookworm::Test;
 
-use Test::More tests => 38;
+use Test::More tests => 48;
 
 my $tester = Bookworm::Test->new();
 my $test_transcript_file = $tester->test_transcript_file;
@@ -51,18 +51,11 @@ sub create_contained_locations {
 
     my $container = $root;
     for my $loc_name (@names) {
-	my $parent_id = $container->location_id;
-	$tester->run_script('cgi/location.cgi',
-			    doit => 'Insert',
-			    name => $loc_name,
-			    parent_location_id => $parent_id,
-			    description => "Test $loc_name");
-	# We don't need to check the output, because it is sufficient that this
-	# "fetch" succeed, and that it has the right parent.
-	my $new = Bookworm::Location->fetch($loc_name, key => 'name');
-	ok($new, "created location '$loc_name'");
-	check_locations($container->name, $loc_name);
-	$container = $new;
+	$container = $tester->test_add_object
+	    ('cgi/location.cgi', 'Bookworm::Location',
+	     name => $loc_name,
+	     parent_location_id => $container->location_id,
+	     description => "Test $loc_name");
     }
 }
 
@@ -103,9 +96,11 @@ ok($root, "have location root")
 create_contained_locations($root, @location_names);
 my $room = Bookworm::Location->fetch('room', key => 'name');
 ok($room, 'have room') or die;
-create_contained_locations($room, qw(bookcase2 shelf2));
 
-## Test some moves.
+## Test updating fields.
+
+## Create more locations to test some moves.
+create_contained_locations($room, qw(bookcase2 shelf2));
 test_move(qw(shelf2 bookcase2 bookcase));
 test_move(qw(shelf bookcase bookcase2));
 
