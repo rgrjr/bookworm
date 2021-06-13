@@ -29,7 +29,9 @@ test-database:		cgi/web_map.tsv
 	    perl -Mlib=. -Mlib=${modframe-dir} \
 		    -MTest::Harness -e 'runtests(@ARGV);' \
 		${modframe-dir}/test/database/test-install-database.pl \
-		test/location-1.pl
+		test/location-1.pl \
+		test/publisher-1.pl
+
 
 install:	install-web
 

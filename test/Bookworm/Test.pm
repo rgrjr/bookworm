@@ -45,3 +45,34 @@ sub destroy_utterly {
 	     undef, $location_id)
 	or die $dbh->errstr;
 }
+
+package Bookworm::Publisher;
+
+sub destroy_utterly {
+    my ($self) = @_;
+    use Bookworm::Book;
+
+    my $publisher_id = $self->publisher_id;
+    my $dbh = $self->db_connection();
+    return
+	if ! $publisher_id;
+    # warn "destroy publisher $publisher_id";
+
+    # Get rid of our books, which must be destroyed because they require
+    # publishers.
+    my $book_ids = $dbh->selectcol_arrayref
+	(q{select book_id from book where publisher_id = ?},
+	 undef, $publisher_id)
+	or die "bug:  ", $dbh->errstr;
+    for my $book_id (@$book_ids) {
+	my $book = Bookworm::Book->fetch($book_id);
+	$book->destroy_utterly()
+	    if $book;
+    }
+    # Get rid of the publisher row.
+    $dbh->do(qq(delete from publisher where publisher_id=?),
+	     undef, $publisher_id)
+	or die $dbh->errstr;
+}
+
+1;
