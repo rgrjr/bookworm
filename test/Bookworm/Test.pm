@@ -75,4 +75,21 @@ sub destroy_utterly {
 	or die $dbh->errstr;
 }
 
+package Bookworm::Author;
+
+sub destroy_utterly {
+    # Deleting authors is easy, because they are only referenced through the
+    # book_author_map.
+    my ($self) = @_;
+
+    my $author_id = $self->author_id;
+    return
+	unless $author_id;
+    my $dbh = $self->db_connection();
+    for my $table (qw{book_author_map author}) {
+	$dbh->do(qq{delete from $table where author_id = ?}, undef, $author_id)
+	    or die $dbh->errstr;
+    }
+}
+
 1;
