@@ -12,10 +12,9 @@ use lib 'test';
 
 use Bookworm::Test;
 
-use Test::More tests => 48;
+use Test::More tests => 51;
 
 my $tester = Bookworm::Test->new();
-my $test_transcript_file = $tester->test_transcript_file;
 my $dbh = $tester->database_handle;
 
 ### Subroutines.
@@ -46,7 +45,7 @@ sub check_locations {
 
 sub create_contained_locations {
     # Create a series of locations, the first one under the specified root, the
-    # next one under the first, and so on.
+    # next one under the first, and so on.  Returns the last created location.
     my ($root, @names) = @_;
 
     my $container = $root;
@@ -57,6 +56,7 @@ sub create_contained_locations {
 	     parent_location_id => $container->location_id,
 	     description => "Test $loc_name");
     }
+    return $container;
 }
 
 sub test_move {
@@ -93,11 +93,22 @@ for my $loc_name (@location_names, qw(bookcase2 shelf2)) {
 my $root = Bookworm::Location->fetch_root();
 ok($root, "have location root")
     or die;
-create_contained_locations($root, @location_names);
+my $shelf = create_contained_locations($root, @location_names);
 my $room = Bookworm::Location->fetch('room', key => 'name');
 ok($room, 'have room') or die;
 
 ## Test updating fields.
+$shelf->description('Updated shelf description');
+$shelf->name('top shelf');
+$shelf->update();
+Bookworm::Location->flush_cache();
+$shelf = ref($shelf)->fetch($shelf->location_id);
+ok($shelf, 'decached shelf') or die;
+is($shelf->description, 'Updated shelf description', 'description updated');
+is($shelf->name, 'top shelf', 'name updated');
+# Rename back.
+$shelf->name('shelf');
+$shelf->update();
 
 ## Create more locations to test some moves.
 create_contained_locations($room, qw(bookcase2 shelf2));
