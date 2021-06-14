@@ -108,5 +108,5 @@ create table staff (
 
 --- Constant data.
 
-insert into location (name, description)
-    values ('Somewhere', 'The root of all locations.');
+insert into location (name, description, parent_location_id)
+    values ('Somewhere', 'The root of all locations.', 0);
