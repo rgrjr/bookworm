@@ -92,4 +92,21 @@ sub destroy_utterly {
     }
 }
 
+package Bookworm::Book;
+
+sub destroy_utterly {
+    # Deleting books is also easy, because they only point to things (including
+    # through the book_author_map), rather than the other way around.
+    my ($self) = @_;
+
+    my $book_id = $self->book_id;
+    return
+	unless $book_id;
+    my $dbh = $self->db_connection();
+    for my $table (qw{book_author_map book}) {
+	$dbh->do(qq{delete from $table where book_id = ?}, undef, $book_id)
+	    or die $dbh->errstr;
+    }
+}
+
 1;

@@ -31,8 +31,8 @@ test-database:		cgi/web_map.tsv
 		${modframe-dir}/test/database/test-install-database.pl \
 		test/location-1.pl \
 		test/publisher-1.pl \
-		test/author-1.pl
-
+		test/author-1.pl \
+		test/book-1.pl
 
 install:	install-web
 
