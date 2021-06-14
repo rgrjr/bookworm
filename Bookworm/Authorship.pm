@@ -25,6 +25,7 @@ BEGIN {
 
 sub table_name { 'book_author_map'; }
 sub primary_key { 'authorship_id'; }
+sub type_pretty_name { 'authorship'; }
 
 sub home_page_name { 'update-authorship.cgi'; }
 sub item_id { shift()->author_id(@_);}
