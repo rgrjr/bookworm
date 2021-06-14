@@ -16,7 +16,7 @@ use Bookworm::Publisher;
 use Bookworm::Author;
 use Bookworm::Location;
 
-use Test::More tests => 37;
+use Test::More tests => 78;
 
 my $tester = Bookworm::Test->new();
 
@@ -95,10 +95,13 @@ sub add_book {
 ### Main code.
 
 ## Get rid of these test books.
-for my $title ('Shadow of the Lion, The') {
-    my $book = Bookworm::Book->fetch($title, key => 'title');
-    $book->destroy_utterly()
-	if $book;
+for my $title ('Shadow of the Lion, The',
+	       'Within Reach: My Everest Story',
+	       'Best SF: 1967',
+	       'Love In The Time Of Cholera') {
+    while (my $book = Bookworm::Book->fetch($title, key => 'title')) {
+	$book->destroy_utterly();
+    }
 }
 Bookworm::Book->flush_cache();
 
@@ -116,7 +119,7 @@ my $authors = $shadow->format_authorship_field
 is($authors, 'Mercedes Lackey, Eric Flint, David Freer',
    "formatted authorship matches");
 
-## Do another.
+## Do another that has a "with" author.
 my $penguin = find_or_create_publisher('Penguin Books, Ltd.', 'London');
 my $reach
     = add_book('Within Reach: My Everest Story', $penguin, 1998, $shelf2,
@@ -126,6 +129,60 @@ $authors = $reach->format_authorship_field
     (undef, undef, 'authors', 1, $reach->authors);
 is($authors, 'Mark Pfetzer and Jack Galvin',
    "formatted authorship matches");
+my $galvin_ship = $reach->authorships->[1];
+$tester->run_script('cgi/update-authorship.cgi',
+		    authorship_id => $galvin_ship->authorship_id,
+		    role => 'with',
+		    doit => 'Update');
+delete($reach->{_book_authorships});	# decache;
+$authors = $reach->format_authorship_field
+    (undef, undef, 'authors', 1, $reach->authors);
+is($authors, 'Mark Pfetzer with Jack Galvin',
+   "new formatted authorship matches");
+
+## And another that with two editors.
+my $berkeley
+    = find_or_create_publisher('Berkeley Publishing Group', 'New York');
+my $best_sf
+    = add_book('Best SF: 1967', $berkeley, 1967, $shelf2,
+	       authors => [ [ qw(Harry Harrison) ], [ qw(Brian Aldiss W.) ] ],
+	       date_read => q{1970's});
+$authors = $best_sf->format_authorship_field
+    (undef, undef, 'authors', 1, $best_sf->authors);
+is($authors, 'Harry Harrison and Brian W. Aldiss',
+   "original formatted authorship matches");
+for my $ship (@{$best_sf->authorships}) {
+    $tester->run_script('cgi/update-authorship.cgi',
+			authorship_id => $ship->authorship_id,
+			role => 'editor',
+			doit => 'Update');
+}
+delete($best_sf->{_book_authorships});	# decache;
+$authors = $best_sf->format_authorship_field
+    (undef, undef, 'authors', 1, $best_sf->authors);
+is($authors, 'Harry Harrison and Brian W. Aldiss, eds',
+   "new formatted authorship matches");
+
+## And finally, one with a translator.
+my $knopf = find_or_create_publisher('Alfred A. Knopf, Inc.', 'New York');
+my $love = add_book('Love In The Time Of Cholera', $knopf, 1988, $shelf2,
+		    authors => [ [ qw(Gabriel Marquez Garcia) ],
+				 [ qw(Edith Grossman) ] ],
+		    date_read => q{2020-12-27});
+$authors = $love->format_authorship_field
+    (undef, undef, 'authors', 1, $love->authors);
+is($authors, 'Gabriel Garcia Marquez and Edith Grossman',
+   "original formatted authorship matches");
+my $grossman_ship = $love->authorships->[1];
+$tester->run_script('cgi/update-authorship.cgi',
+		    authorship_id => $grossman_ship->authorship_id,
+		    role => 'translator',
+		    doit => 'Update');
+delete($love->{_book_authorships});	# decache;
+$authors = $love->format_authorship_field
+    (undef, undef, 'authors', 1, $love->authors);
+is($authors, 'Gabriel Garcia Marquez, translated by Edith Grossman',
+   "new formatted authorship matches");
 
 ## All done.
 $tester->clean_up;
