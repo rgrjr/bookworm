@@ -15,9 +15,6 @@ use Bookworm::Test;
 use Test::More tests => 7;
 
 my $tester = Bookworm::Test->new();
-my $dbh = $tester->database_handle;
-
-### Subroutines.
 
 ### Main code.
 
@@ -35,8 +32,7 @@ $tester->run_script('cgi/author.cgi',
 		    doit => 'Insert',
 		    first_name => 'Lyman',
 		    mid_name => 'Frank',
-		    last_name => 'Baum',
-);
+		    last_name => 'Baum');
 my $baum = Bookworm::Author->fetch('Baum', key => 'last_name');
 ok($baum, 'have Baum') or die;
 is($baum->first_name, 'Lyman', 'first name matches');
