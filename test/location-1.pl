@@ -43,22 +43,6 @@ sub check_locations {
     }
 }
 
-sub create_contained_locations {
-    # Create a series of locations, the first one under the specified root, the
-    # next one under the first, and so on.  Returns the last created location.
-    my ($root, @names) = @_;
-
-    my $container = $root;
-    for my $loc_name (@names) {
-	$container = $tester->test_add_object
-	    ('cgi/location.cgi', 'Bookworm::Location',
-	     name => $loc_name,
-	     parent_location_id => $container->location_id,
-	     description => "Test $loc_name");
-    }
-    return $container;
-}
-
 sub test_move {
     # 5 "ok" calls per invocation.
     my ($moved_name, $old_loc_name, $new_loc_name, $fail_p) = @_;
@@ -93,7 +77,7 @@ for my $loc_name (@location_names, qw(bookcase2 shelf2)) {
 my $root = Bookworm::Location->fetch_root();
 ok($root, "have location root")
     or die;
-my $shelf = create_contained_locations($root, @location_names);
+my $shelf = $tester->create_contained_locations($root, @location_names);
 my $room = Bookworm::Location->fetch('room', key => 'name');
 ok($room, 'have room') or die;
 
@@ -111,7 +95,7 @@ $shelf->name('shelf');
 $shelf->update();
 
 ## Create more locations to test some moves.
-create_contained_locations($room, qw(bookcase2 shelf2));
+$tester->create_contained_locations($room, qw(bookcase2 shelf2));
 test_move(qw(shelf2 bookcase2 bookcase));
 test_move(qw(shelf bookcase bookcase2));
 

@@ -22,6 +22,22 @@ $ENV{HARNESS_CGI_DIR} = './cgi';
 
 ### Helper methods.
 
+sub create_contained_locations {
+    # Create a series of locations, the first one under the specified root, the
+    # next one under the first, and so on.  Returns the last created location.
+    my ($tester, $root, @names) = @_;
+
+    my $container = $root;
+    for my $loc_name (@names) {
+	$container = $tester->test_add_object
+	    ('cgi/location.cgi', 'Bookworm::Location',
+	     name => $loc_name,
+	     parent_location_id => $container->location_id,
+	     description => "Test $loc_name");
+    }
+    return $container;
+}
+
 sub find_or_create_publisher {
     my ($tester, $name, $city) = @_;
     require Bookworm::Publisher;
