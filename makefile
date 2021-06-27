@@ -32,8 +32,7 @@ test-database:		cgi/web_map.tsv
 		test/location-1.pl \
 		test/publisher-1.pl \
 		test/author-1.pl \
-		test/book-1.pl \
-		test/book-2.pl \
+		test/book-*.pl \
 		test/check-foreign-keys.pl
 
 install:	install-web
