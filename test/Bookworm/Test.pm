@@ -58,10 +58,8 @@ sub find_or_create_publisher {
 }
 
 sub test_add_book {
-    # 9 "ok" calls per invocation, plus 3 per author.
+    # 10 "ok" calls per invocation, plus 3 per author.
     my ($tester, $title, $publisher, $pub_year, $location, %keys) = @_;
-    my $date_read = $keys{date_read} || '';
-    my $category = $keys{category} || 'fiction';
     my $authors = $keys{authors} || [ ];
 
     my $new_book = $tester->test_add_object
@@ -69,8 +67,9 @@ sub test_add_book {
 	 title => $title,
 	 publisher_id => $publisher->publisher_id,
 	 publication_year => $pub_year,
-	 category => 'fiction',
-	 date_read => $date_read,
+	 category => $keys{category} || 'fiction',
+	 date_read => $keys{date_read} || '',
+	 notes => $keys{notes} || '',
 	 location_id => $location->location_id);
     # use Data::Dumper; warn Dumper($new_book);
 

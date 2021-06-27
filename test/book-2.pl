@@ -15,7 +15,7 @@ use Bookworm::Book;
 use Bookworm::Author;
 use Bookworm::Location;
 
-use Test::More tests => 78;
+use Test::More tests => 82;
 
 my $tester = Bookworm::Test->new();
 
