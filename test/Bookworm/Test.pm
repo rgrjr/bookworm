@@ -15,8 +15,83 @@ BEGIN {
 
 use parent qw(ModGen::Test);
 
+use Test::More;
+
 # This is a permanent renaming.
 $ENV{HARNESS_CGI_DIR} = './cgi';
+
+### Helper methods.
+
+sub find_or_create_publisher {
+    my ($tester, $name, $city) = @_;
+    require Bookworm::Publisher;
+
+    my $publisher = Bookworm::Publisher->fetch($name, key => 'publisher_name');
+    if ($publisher) {
+	ok($publisher, "have '$name'");
+    }
+    else {
+	$tester->run_script('cgi/publisher.cgi',
+			    doit => 'Insert',
+			    publisher_name => $name,
+			    publisher_city => $city);
+	$publisher = Bookworm::Publisher->fetch($name, key => 'publisher_name')
+	    or die "failed to create '$name'";
+    }
+    return $publisher;
+}
+
+sub test_add_book {
+    # 9 "ok" calls per invocation, plus 3 per author.
+    my ($tester, $title, $publisher, $pub_year, $location, %keys) = @_;
+    my $date_read = $keys{date_read} || '';
+    my $category = $keys{category} || 'fiction';
+    my $authors = $keys{authors} || [ ];
+
+    my $new_book = $tester->test_add_object
+	('cgi/book.cgi', 'Bookworm::Book',
+	 title => $title,
+	 publisher_id => $publisher->publisher_id,
+	 publication_year => $pub_year,
+	 category => 'fiction',
+	 date_read => $date_read,
+	 location_id => $location->location_id);
+    # use Data::Dumper; warn Dumper($new_book);
+
+    # Add author(s), creating if necessary.
+    for my $author_name (@$authors) {
+	my ($first, $last, $mid) = @$author_name;
+	# [This is a kludge that we have to assume that last names are unique
+	# in the test database.  -- rgr, 14-Jun-21.]
+	my $author = Bookworm::Author->fetch($last, key => 'last_name');
+	if (! $author) {
+	    $tester->run_script('cgi/author.cgi',
+				doit => 'Insert',
+				first_name => $first,
+				mid_name => $mid || '',
+				last_name => $last);
+	    $author = Bookworm::Author->fetch($last, key => 'last_name')
+		or die "failed to create author '$first $last'";
+	}
+	else {
+	    # This must be an "ok" to match the run_script "ok".
+	    ok($author, "have " . $author->pretty_name);
+	}
+	$tester->run_script('cgi/add-book-author.cgi',
+			    book_id => $new_book->book_id,
+			    author_id => $author->author_id);
+    }
+
+    # Check the author(s).
+    my $authorships = $new_book->authorships;
+    ok(@$authorships == @$authors, 'has the right number of authors');
+    for my $i (0 .. @$authors-1) {
+	my $authorship = $authorships->[$i];
+	is($authorship->author->last_name, $authors->[$i][1],
+	   "authorship $i has the right last name");
+    }
+    return $new_book;
+}
 
 ### Object destruction methods.
 
