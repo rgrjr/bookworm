@@ -15,7 +15,7 @@ use Bookworm::Book;
 use Bookworm::Author;
 use Bookworm::Location;
 
-use Test::More tests => 60;
+use Test::More tests => 66;
 
 my $tester = Bookworm::Test->new();
 
@@ -90,6 +90,22 @@ $tester->run_script('cgi/book.cgi',
 		    location_id => $box2->location_id,
 		    doit => 'Update');
 verify_location_books($box2, [ 'On Basilisk Station' ]);
+verify_location_books($box1,
+		      [ 'Honor of the Queen, The',
+			'Short Victorious War, The' ]);
+
+## Use the location.cgi page to move the others.
+$tester->run_script('cgi/location.cgi',
+		    book_id => $honor->book_id,
+		    book_id => $war->book_id,
+		    location_id => $box1->location_id,
+		    destination_container_id => $box2->location_id,
+		    doit => 'Move');
+verify_location_books($box2,
+		      [ 'On Basilisk Station',
+			'Honor of the Queen, The',
+			'Short Victorious War, The' ]);
+verify_location_books($box1, [ ]);
 
 ## All done.
 $tester->clean_up;
