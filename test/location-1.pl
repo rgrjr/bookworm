@@ -12,7 +12,7 @@ use lib 'test';
 
 use Bookworm::Test;
 
-use Test::More tests => 51;
+use Test::More tests => 55;
 
 my $tester = Bookworm::Test->new();
 my $dbh = $tester->database_handle;
@@ -93,6 +93,19 @@ is($shelf->name, 'top shelf', 'name updated');
 # Rename back.
 $shelf->name('shelf');
 $shelf->update();
+
+## Test some creation attempts that should fail.
+$tester->run_script
+    ('cgi/location.cgi',
+     name => 'no parent');
+ok(! Bookworm::Location->fetch('no parent', key => 'name'),
+   'parentless location not created');
+$tester->run_script
+    ('cgi/location.cgi',
+     parent_location_id => $root->location_id);
+$root->location_children(undef);	# decache;
+my ($nameless) = grep { ! $_->name; } @{$root->location_children};
+ok(! $nameless, 'nameless location not created');
 
 ## Create more locations to test some moves.
 $tester->create_contained_locations($room, qw(bookcase2 shelf2));

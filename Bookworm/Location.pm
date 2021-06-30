@@ -136,7 +136,9 @@ sub validate_parent_location_id {
 sub validate {
     my ($self, $interface) = @_;
 
-    $interface->_error("Locations must have parent location.\n")
+    $interface->_error("Locations must have a name.\n")
+	unless $self->name;
+    $interface->_error("Locations must have a parent location.\n")
 	unless $self->parent_location_id || $self->name eq 'Somewhere';
 }
 
