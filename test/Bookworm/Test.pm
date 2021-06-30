@@ -10,7 +10,9 @@ use warnings;
 
 BEGIN {
     # We need these now in order to load ModGen::Test.
-    unshift(@INC, split(':', $ENV{HARNESS_EXTRA_LIBS}));
+    my $libs = $ENV{HARNESS_EXTRA_LIBS}
+        or die 'Oops; we need the HARNESS_EXTRA_LIBS environment variable';
+    unshift(@INC, split(':', $libs));
 }
 
 use parent qw(ModGen::Test);
