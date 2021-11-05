@@ -29,11 +29,45 @@ sub web_home_page {
 	return $q->a({ href => $search_page }, $text);
     };
 
+    # Find descriptions that may include weight in pounds.
+    my $weight_string = '.';
+    {
+	my ($total_weight, $n_desc, $n_match, @fails) = (0, 0, 0);
+	my $descriptions = $dbh->selectcol_arrayref
+	    (q{select description from location where description like '%lb%'})
+	    or die $dbh->errstr;
+	for my $desc (@$descriptions) {
+	    $n_desc++;
+	    if ($desc =~ /\((\d+([.]\d*)?)lb[.]?\)/) {
+		$n_match++, $total_weight += $1;
+	    }
+	    else {
+		push(@fails, "fail:  '$desc'");
+	    }
+	}
+	if ($total_weight > 0 || $n_desc != $n_match) {
+	    $weight_string = ", reported total weight ${total_weight}lb";
+	    if ($n_desc != $n_match) {
+		# We have some excess descriptions that match the SQL pattern
+		# but not the Perl regexp.  Report these in case they are typos
+		# (though this is mostly useful for debugging).
+		$weight_string .= " [n_desc $n_desc, n_match $n_match].\n";
+		$weight_string .= $q->ul(map { $q->li($_); } @fails)
+		    if @fails;
+	    }
+	    else {
+		$weight_string .= '.';
+	    }
+	}
+    }
+
+    # Print summaries.
     $q->_header(title => 'Bookworm home page');
     print($q->p('Total of ', $do_class->('Bookworm::Book'),
 		' by ', $do_class->('Bookworm::Author'),
 		' from ', $do_class->('Bookworm::Publisher'),
-		' in ', $do_class->('Bookworm::Location') . "."),
+		' in ', $do_class->('Bookworm::Location')
+		. $weight_string),
 	  "\n");
     $q->_footer();
 }
