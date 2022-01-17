@@ -15,3 +15,9 @@ select * from book
 select category, count(*) as n_books
     from book
     group by category;
+
+-- Delete a book (it was a duplicate).
+delete from book_author_map
+    where book_id = 1438;
+delete from book
+    where book_id = 1438;
