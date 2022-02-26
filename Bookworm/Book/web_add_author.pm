@@ -22,6 +22,7 @@ sub web_add_author {
     # Check for duplication.
     my $caller = $q->param('return_address') || $self->home_page_url($q);
     my $max_order = 0;
+    my %role_counts;
     {
 	my $msg = '';
 	my %author_id_p = map { ($_ => 1); } @author_ids;
@@ -31,6 +32,7 @@ sub web_add_author {
 		    if $msg;
 		$msg .= $authorship->author_name . ' is already an author.';
 	    }
+	    $role_counts{$authorship->role}++;
 	    my $order = $authorship->attribution_order;
 	    $max_order = $order
 		if $max_order < $order;
@@ -41,14 +43,22 @@ sub web_add_author {
 	    return;
 	}
     }
+    my $role = 'author';
+    # If there is already at least one author, and they all have the same role
+    # (usually "author" or "editor"), then make that the default.
+    ($role) = keys(%role_counts)
+	if keys(%role_counts) == 1;
+    # But override with a CGI parameter if specified.
+    $role = $q->param('role')
+	if $q->param('role');
 
     # Add the thing.
     my $dbh = $q->connect_to_database();
     for my $author_id (@author_ids) {
 	$dbh->do(q{insert into book_author_map
- 	               (author_id, book_id, attribution_order)
-	           values (?, ?, ?)},
-		 undef, $author_id, $self->book_id, $max_order + 1)
+ 	               (author_id, book_id, role, attribution_order)
+	           values (?, ?, ?, ?)},
+		 undef, $author_id, $self->book_id, $role, $max_order + 1)
 	    or die $dbh->errstr;
     }
     my $n_authors = scalar(@author_ids);
