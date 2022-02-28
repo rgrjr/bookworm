@@ -85,6 +85,16 @@ sub n_total_books {
     return $total;
 }
 
+sub display_info {
+    my ($self, $q) = @_;
+
+    my $n_books = $self->n_local_books;
+    return (! $n_books ? ()
+	    : $n_books == 1 ? '1 book'
+	    : "$n_books books",
+	    $self->SUPER::display_info($q));
+}
+
 # This allows the text to be seen more easily.
 my %pastel_from_color
     = (grey => '#bbb',
