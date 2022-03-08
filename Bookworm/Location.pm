@@ -480,7 +480,7 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(description parent_location_id) ];
+	     qw(description n_total_books parent_location_id) ];
 }
 
 1;
