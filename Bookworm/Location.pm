@@ -12,7 +12,8 @@ use base qw(Bookworm::Base);
 
 BEGIN {
     Bookworm::Location->build_field_accessors
-	([ qw(location_id name description bg_color parent_location_id) ]);
+	([ qw(location_id name description destination),
+	   qw(bg_color parent_location_id) ]);
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
     Bookworm::Location->build_set_fetch_accessor
@@ -146,6 +147,8 @@ my @local_display_fields
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
 	 type => 'text', rows => 8, columns => 80 },
+       { accessor => 'destination', pretty_name => 'Destination',
+	 type => 'string', size => 80 },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
@@ -536,7 +539,7 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(description n_total_books parent_location_id) ];
+	     qw(description n_total_books destination parent_location_id) ];
 }
 
 1;

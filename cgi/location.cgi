@@ -65,6 +65,12 @@ the "Parent location:" field, described below.
 Contains free text describing the location.  For boxes of books, this
 is often about the genre, when I read them, or when I got rid of them.
 
+=item B<Destination:>
+
+If this location is a box packed for moving, then this field may be
+filled in with the planned destination for the box, e.g. "Bob's
+Office."
+
 =item B<Background:>
 
 Defines a background color for the location name when it appears in a
