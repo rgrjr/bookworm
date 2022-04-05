@@ -46,7 +46,9 @@ sub web_home_page {
 	    }
 	}
 	if ($total_weight > 0 || $n_desc != $n_match) {
-	    $weight_string = ", reported total weight ${total_weight}lb";
+	    $weight_string
+		= (", reported total weight ${total_weight}lb in $n_desc"
+		   . ($n_desc > 1 ? ' locations' : ' location'));
 	    if ($n_desc != $n_match) {
 		# We have some excess descriptions that match the SQL pattern
 		# but not the Perl regexp.  Report these in case they are typos
