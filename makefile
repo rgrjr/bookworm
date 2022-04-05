@@ -15,7 +15,7 @@ server-prefix = bookworm
 # bookworm-path is the filesystem path to server-prefix.
 bookworm-path = /srv/www/htdocs/${server-prefix}
 
-RELEASE = 0.1
+RELEASE = 0.2
 # This is the number of the compatible MODFRAME release.
 MODFRAME_RELEASE = 3.7
 

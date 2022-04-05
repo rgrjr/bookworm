@@ -1,7 +1,7 @@
 -- *** Bookworm Schema ***
 --
 -- [the next line is parsed by the DB uploader.  -- rgr, 29-Jan-11.]
--- Version: 0.1
+-- Version: 0.2
 --
 -- Or upload manually with:
 --
@@ -35,8 +35,8 @@ create table book (
   title varchar(200) default '',
   publisher_id int(11) default null,
   publication_year varchar(4),
-  category enum('fiction', 'sf', 'history', 'biography', 'text',
-		'guidebook', 'nonfiction'),
+  category enum('fiction', 'biography', 'guidebook', 'history',
+		'nonfiction', 'reference', 'satire', 'text'),
   date_read varchar(100) NOT NULL default '',
   notes varchar(4000) default '',
   location_id int(11) default NULL,
@@ -67,6 +67,9 @@ create table location (
   location_id int(11) NOT NULL auto_increment,
   name varchar(100) NOT NULL default '',
   description varchar(4000) default '',
+  bg_color enum('inherit', 'grey', 'yellow', 'orange', 'red',
+		'purple', 'blue', 'aqua', 'green', 'chartreuse')
+	   default 'inherit',
   parent_location_id int(11) default NULL,
   PRIMARY KEY (location_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
