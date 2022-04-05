@@ -316,7 +316,7 @@ sub post_web_update {
 			(@$child_locations
 			 ? ($self->present_sorted_content
 			    ($q, "$unlink locations",
-			     [ qw(name n_total_books description) ],
+			     [ qw(name n_total_books destination description) ],
 			     $child_locations,
 			     prefix => 'locations', default_sort => 'name')
 			    . "<br>\n")
