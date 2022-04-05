@@ -554,11 +554,25 @@ books).
 
 =head2 Accessors and methods
 
+=head3 ajax_sort_content
+
+Given a C<Bookworm::Location> and a C<ModGen::CGI> object, handles
+AJAX requests to sort book or location content.
+
 =head3 ancestor_of
 
 Given another C<Bookworm::Location> object, returns true iff self
 contains the other location.  This is used to prevent cycles by the
 user interface that moves locations.
+
+=head3 bg_color
+
+Returns or sets a string that determines the background color of the
+location name in most display contexts.  See the C<@background_colors>
+array for allowed variables.  The special value "inherit" means to use
+the location of our L</parent_location>, or no special background if
+no ancestor specifies a color.  The L</backgroundify> method
+implements the search.
 
 =head3 book_children
 
@@ -593,6 +607,11 @@ Returns or sets a free text description of the location.  This is
 usually used to describe the purpose of the location, since I tend to
 create locations that are fine-grained enough to be self-describing,
 e.g. "Somewhere >> home >> Bedroom >> BR Bookshelf >> BR BS #3".
+
+=head3 display_info
+
+Add the number of books (if we have any) to what the superclass method
+provides, used as extra information on the Location Tree page.
 
 =head3 fetch_root
 

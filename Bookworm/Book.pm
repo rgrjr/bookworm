@@ -439,6 +439,12 @@ Synonym for the L</title> slot, to avoid ambiguity in C<web_update>.
 Returns or sets the book category, e.g. fiction, biography.  This is
 implemented as an enumeration in the schema and the user interface.
 
+=head3 compare_authors_arrays
+
+Given two arrayrefs of C<Bookworm::Author> instances, return -1, 0, or
+1 to reflect their proper sort ort.  For sorting in the
+C<Bookworm::Location> books table.
+
 =head3 contained_item_class
 
 Returns the string 'Bookworm::Authorship', which enables books to act
@@ -556,6 +562,12 @@ notes.)
 Returns or sets the ID of the C<Bookworm::Publisher>.  Note that there
 is no fetch accessor for the publisher, because we don't do much with
 publishers.
+
+=head3 search_date_string_field
+
+Synonym for C<search_integer_field>.  This allows us to specify "At
+least" and "At most" bounds for a string-valued field that happends to
+represent a date.
 
 =head3 title
 
