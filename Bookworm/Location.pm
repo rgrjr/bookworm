@@ -12,7 +12,7 @@ use base qw(Bookworm::Base);
 
 BEGIN {
     Bookworm::Location->build_field_accessors
-	([ qw(location_id name description destination),
+	([ qw(location_id name description destination weight),
 	   qw(bg_color parent_location_id) ]);
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
@@ -149,6 +149,8 @@ my @local_display_fields
 	 type => 'text', rows => 8, columns => 80 },
        { accessor => 'destination', pretty_name => 'Destination',
 	 type => 'string', size => 80 },
+       { accessor => 'weight', pretty_name => 'Packed weight',
+	 type => 'number' },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
@@ -527,7 +529,7 @@ sub default_search_fields {
 	     { accessor => 'description',
 	       pretty_name => 'Description',
 	       search_type => 'name' },
-	     'destination',
+	     'destination', 'weight',
 	     { accessor => 'limit',
 	       search_type => 'limit',
 	       pretty_name => 'Max locations to show',
@@ -540,7 +542,8 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(description n_total_books destination parent_location_id) ];
+	     qw(description n_total_books destination),
+	     qw(weight parent_location_id) ];
 }
 
 1;

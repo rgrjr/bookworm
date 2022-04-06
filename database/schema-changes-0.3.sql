@@ -8,3 +8,9 @@ alter table location
   add column
     destination varchar(100) NOT NULL default ''
   after description;
+
+--- Rev 2:  Add a location.weight column.
+alter table location
+  add column
+    weight decimal(5,1) NOT NULL default '0.0'
+  after destination;
