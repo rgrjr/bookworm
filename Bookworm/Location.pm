@@ -542,8 +542,8 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(description n_total_books destination),
-	     qw(weight parent_location_id) ];
+	     qw(description n_total_books parent_location_id),
+	     qw(weight destination) ];
 }
 
 1;
