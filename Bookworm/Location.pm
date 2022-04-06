@@ -527,6 +527,7 @@ sub default_search_fields {
 	     { accessor => 'description',
 	       pretty_name => 'Description',
 	       search_type => 'name' },
+	     'destination',
 	     { accessor => 'limit',
 	       search_type => 'limit',
 	       pretty_name => 'Max locations to show',

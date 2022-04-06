@@ -53,6 +53,10 @@ Look for locations with names that match these words.
 
 Look for locations with descriptions that match these words.
 
+=item B<Destination:>
+
+Look for locations with destinations that match these words.
+
 =item B<Max locations to show:>
 
 Limits the display to show only this many locations.  The initial
