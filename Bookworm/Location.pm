@@ -318,7 +318,8 @@ sub post_web_update {
 			(@$child_locations
 			 ? ($self->present_sorted_content
 			    ($q, "$unlink locations",
-			     [ qw(name n_total_books destination description) ],
+			     [ qw(name n_total_books description),
+			       qw(weight destination) ],
 			     $child_locations,
 			     prefix => 'locations', default_sort => 'name')
 			    . "<br>\n")
@@ -542,8 +543,8 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(description n_total_books parent_location_id),
-	     qw(weight destination) ];
+	     qw(n_total_books description),
+	     qw(weight destination parent_location_id) ];
 }
 
 1;
