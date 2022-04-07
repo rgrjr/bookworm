@@ -31,7 +31,7 @@ updated.  See L<location.cgi> for more about locations.
 
 =head2 Search dialog items
 
-The first two input boxes are for string matching, which is done word
+The first three input boxes are for string matching, which is done word
 by word without regard to alphabetic case.  A location matches if all
 words are contained as substrings in that particular field.  The
 character "_" (underscore) matches any single character, and "%"
