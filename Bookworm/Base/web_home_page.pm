@@ -31,6 +31,8 @@ sub web_home_page {
 
     # Find descriptions that may include weight in pounds.
     my $weight_string = '.';
+    my $bin_width = 5;
+    my @histogram_bins;
     {
 	my ($total_weight, $n_desc, $n_match, @fails) = (0, 0, 0);
 	my $descriptions = $dbh->selectcol_arrayref
@@ -39,7 +41,11 @@ sub web_home_page {
 	for my $desc (@$descriptions) {
 	    $n_desc++;
 	    if ($desc =~ /\((\d+([.]\d*)?)lb[.]?\)/) {
-		$n_match++, $total_weight += $1;
+		$n_match++;
+		my $weight = $1;
+		$total_weight += $weight;
+		my $bin = int($weight / $bin_width);
+		$histogram_bins[$bin]++;
 	    }
 	    else {
 		push(@fails, "fail:  '$desc'");
@@ -71,6 +77,22 @@ sub web_home_page {
 		' in ', $do_class->('Bookworm::Location')
 		. $weight_string),
 	  "\n");
+
+    # Maybe add a histogram plot of weights.
+    if (@histogram_bins) {
+	my %histogram_hash;
+	for my $bin (0 .. @histogram_bins-1) {
+	    my $count = $histogram_bins[$bin];
+	    next
+		unless $count;
+	    my $value = $bin * $bin_width;
+	    $histogram_hash{$value} = $count;
+	}
+	my $url = $q->oligo_query('plot-hist.cgi',
+				  data => join(';', %histogram_hash));
+	print($q->p($q->img({ src => $url, alt => 'Histogram of weights' })),
+	      "\n");
+    }
     $q->_footer();
 }
 

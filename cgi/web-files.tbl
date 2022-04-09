@@ -16,6 +16,7 @@ find-location.cgi	prod	cgi	Find Location	Search
 find-publisher.cgi	prod	cgi	Find Publisher	Search
 location-tree.cgi	prod	cgi	Location Tree	Location
 delete-location.cgi	prod	cgi	Delete Location
+plot-hist.cgi	prod	cgi	Plot Histogram
 styles/cssmenu.css	prod	css
 styles/main.css	prod	css
 ajax-last-chosen.cgi	prod	cgi	Last Chosen
