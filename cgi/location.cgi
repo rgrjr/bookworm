@@ -71,6 +71,11 @@ If this location is a box packed for moving, then this field may be
 filled in with the planned destination for the box, e.g. "Bob's
 Office."
 
+=item B<Packed weight:>
+
+Contains the packed weight of the container, normally a box if this is
+not zero.
+
 =item B<Background:>
 
 Defines a background color for the location name when it appears in a
