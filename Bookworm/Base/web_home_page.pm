@@ -29,43 +29,40 @@ sub web_home_page {
 	return $q->a({ href => $search_page }, $text);
     };
 
-    # Find descriptions that may include weight in pounds.
+    # Build @histogram_bins and %destinations.
     my $weight_string = '.';
     my $bin_width = 5;
-    my @histogram_bins;
+    my (@histogram_bins, %destinations);
     {
-	my ($total_weight, $n_desc, $n_match, @fails) = (0, 0, 0);
-	my $descriptions = $dbh->selectcol_arrayref
-	    (q{select description from location where description like '%lb%'})
+	my ($total_weight, $n_desc) = (0, 0);
+	my $sth = $dbh->prepare
+	    (q{select weight, destination from location
+	           where weight > 0.0})
 	    or die $dbh->errstr;
-	for my $desc (@$descriptions) {
+	$sth->execute()
+	    or die $dbh->errstr;
+	while (my @row = $sth->fetchrow_array) {
 	    $n_desc++;
-	    if ($desc =~ /\((\d+([.]\d*)?)lb[.]?\)/) {
-		$n_match++;
-		my $weight = $1;
-		$total_weight += $weight;
-		my $bin = int($weight / $bin_width);
-		$histogram_bins[$bin]++;
-	    }
-	    else {
-		push(@fails, "fail:  '$desc'");
-	    }
+	    my ($weight, $destination) = @row;
+	    $total_weight += $weight;
+	    # Note that we're making these case-insensitive, but keeping the
+	    # case of the first one we encounter.
+	    my $dest = ($destinations{lc($destination)}
+			||= [ $destination, 0, 0.0 ]);
+	    $dest->[1]++;
+	    $dest->[2] += $weight;
+	    my $bin = int($weight / $bin_width);
+	    $histogram_bins[$bin]++;
 	}
-	if ($total_weight > 0 || $n_desc != $n_match) {
+	if ($total_weight > 0) {
+	    my $search_url = $q->oligo_query('find-location.cgi',
+					     weight_min => 1);
+	    my $search_link
+		= $q->a({ href => $search_url }, "in $n_desc",
+			($n_desc > 1 ? 'locations' : 'location'));
 	    $weight_string
-		= (", reported total weight ${total_weight}lb in $n_desc"
-		   . ($n_desc > 1 ? ' locations' : ' location'));
-	    if ($n_desc != $n_match) {
-		# We have some excess descriptions that match the SQL pattern
-		# but not the Perl regexp.  Report these in case they are typos
-		# (though this is mostly useful for debugging).
-		$weight_string .= " [n_desc $n_desc, n_match $n_match].\n";
-		$weight_string .= $q->ul(map { $q->li($_); } @fails)
-		    if @fails;
-	    }
-	    else {
-		$weight_string .= '.';
-	    }
+		= (", reported total weight ${total_weight}lb "
+		   . "$search_link.");
 	}
     }
 
@@ -78,8 +75,27 @@ sub web_home_page {
 		. $weight_string),
 	  "\n");
 
-    # Maybe add a histogram plot of weights.
+    # Maybe add weight summaries.
     if (@histogram_bins) {
+
+	# Table of weights by destination.
+	my @rows
+	    = (q{<tr><th>Destination</th><th>Boxes</th><th>Weight</th></tr>});
+	for my $dest_name (sort(keys(%destinations))) {
+	    my ($dest, $count, $weight) = @{$destinations{$dest_name}};
+	    my $search_url = $q->oligo_query('find-location.cgi',
+					     destination => $dest);
+	    my $search_link
+		= $q->a({ href => $search_url }, $q->escapeHTML($dest));
+	    push(@rows,
+		 $q->Tr($q->td($search_link),
+			$q->td({ align => 'right' }, $count),
+			$q->td({ align => 'right' },
+			       sprintf('%.1f', $weight))));
+	}
+	print($q->blockquote($q->table(join("\n", @rows))), "\n");
+
+	# Weight histogram distribution plot.
 	my %histogram_hash;
 	for my $bin (0 .. @histogram_bins-1) {
 	    my $count = $histogram_bins[$bin];
