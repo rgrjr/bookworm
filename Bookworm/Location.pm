@@ -86,6 +86,25 @@ sub n_total_books {
     return $total;
 }
 
+sub total_weight {
+    my ($self) = @_;
+
+    my $total = $self->weight;
+    for my $child (@{$self->location_children}) {
+	$total += $child->total_weight;
+    }
+    return $total;
+}
+
+sub total_weight_p {
+    my ($self) = @_;
+
+    return
+	if $self->weight > 0;
+    return 1
+	if @{$self->location_children};
+}
+
 sub display_info {
     my ($self, $q) = @_;
 
@@ -151,6 +170,8 @@ my @local_display_fields
 	 type => 'string', size => 80 },
        { accessor => 'weight', pretty_name => 'Packed weight',
 	 type => 'number', show_total_p => 1 },
+       { accessor => 'total_weight', pretty_name => 'Total weight',
+	 skip_if_not => 'total_weight_p', show_total_p => 1 },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
@@ -616,6 +637,12 @@ usually used to describe the purpose of the location, since I tend to
 create locations that are fine-grained enough to be self-describing,
 e.g. "Somewhere >> home >> Bedroom >> BR Bookshelf >> BR BS #3".
 
+=head3 destination
+
+Returns or sets the value of the database field that records a
+free-text string where the user wants the location (usually a packed
+box) to go after moving.
+
 =head3 display_info
 
 Add the number of books (if we have any) to what the superclass method
@@ -686,6 +713,18 @@ C<location_id> rather than the name allows users to change the name.
 Returns L</location_children> as a list (rather than an arrayref), to
 provide the location hierarchy browser with something to browse.
 
+=head3 total_weight
+
+Compute the sum of our C<weight> value and the C<total_weight> of each
+of our L</location_children> recursively, i.e. the weight of
+everything we contain.
+
+=head3 total_weight_p
+
+Return true if we have a zero C<weight> value and at least one member
+of L</location_children>.  Used as a C<skip_if_not> control for
+whether to display our C<total_weight> value.
+
 =head3 validate
 
 Insist on having a parent location.
@@ -711,5 +750,12 @@ C<book_id> parameters in hand, we present a page with the book titles
 and their old locations and ask the user to confirm the move.  If the
 user clicks the confirm button, the book locations are updated, and
 the user is redirected back to the destination location page.
+
+=head3 weight
+
+Returns or sets the value of the database field that records the
+weight of the location, usually a packed box.  The database declares
+this field as "decimal(5,1)", i.e. a fixed decimal number with one
+fractional place.
 
 =cut

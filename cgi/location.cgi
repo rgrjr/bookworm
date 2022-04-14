@@ -73,8 +73,14 @@ Office."
 
 =item B<Packed weight:>
 
-Contains the packed weight of the container, normally a box if this is
+Contains the packed weight of the location, normally a box if this is
 not zero.
+
+=item B<Total weight:>
+
+Displays the total weight of all contained locations.  This field is
+read-only, and is shown only if there is at least one contained
+location.
 
 =item B<Background:>
 
