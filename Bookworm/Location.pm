@@ -171,7 +171,7 @@ my @local_display_fields
        { accessor => 'weight', pretty_name => 'Packed weight',
 	 type => 'number', show_total_p => 1 },
        { accessor => 'total_weight', pretty_name => 'Total weight',
-	 skip_if_not => 'total_weight_p', show_total_p => 1 },
+	 verbosity => 2, show_total_p => 1 },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
@@ -340,7 +340,7 @@ sub post_web_update {
 			 ? ($self->present_sorted_content
 			    ($q, "$unlink locations",
 			     [ qw(name n_total_books description),
-			       qw(weight destination) ],
+			       qw(total_weight destination) ],
 			     $child_locations,
 			     prefix => 'locations', default_sort => 'name')
 			    . "<br>\n")
