@@ -546,12 +546,15 @@ sub web_delete_location {
 sub default_search_fields {
     return [ { accessor => 'name',
 	       pretty_name => 'Location name',
-	       search_type => 'string',
+	       search_type => 'string', search_field => 'location.name',
 	       search_id => 'location_id' },
 	     { accessor => 'description',
 	       pretty_name => 'Description',
 	       search_type => 'name' },
-	     'destination', 'weight',
+	     qw(weight destination),
+	     { accessor => 'parent_name',
+	       pretty_name => 'Parent location',
+	       search_type => 'name', search_field => 'parent.name' },
 	     { accessor => 'limit',
 	       search_type => 'limit',
 	       pretty_name => 'Max locations to show',
@@ -566,6 +569,20 @@ sub default_display_columns {
 	       default_sort => 'asc' },
 	     qw(n_total_books description),
 	     qw(weight destination parent_location_id) ];
+}
+
+my $base_query
+    # This needs to be a left join so that the top-level location (which
+    # doesn't have a parent) can be returned as the result of a search.
+    = q{select location.*, parent.name as parent_name
+	from location
+	     left join location as parent
+		  on parent.location_id = location.parent_location_id};
+
+sub web_search {
+    my ($class, $q, @options) = @_;
+
+    $class->SUPER::web_search($q, base_query => $base_query, @options);
 }
 
 1;

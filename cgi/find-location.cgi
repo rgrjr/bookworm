@@ -57,6 +57,11 @@ Look for locations with descriptions that match these words.
 
 Look for locations with destinations that match these words.
 
+=item B<Parent location:>
+
+Look for locations that are in other locations with names that match
+these words.
+
 =item B<Packed weight:>
 
 Show only locations with packed weights within this range.  If either
