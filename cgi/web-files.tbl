@@ -10,6 +10,7 @@ update-authorship.cgi	prod	cgi	Update Authorship
 location.cgi	prod	cgi	Add Location	Add
 ajax-location-sort.cgi	prod	cgi	Ajax Location Sort
 move-books.cgi	prod	cgi	Move Book(s)
+move-locations.cgi	prod	cgi	Move Location(s)
 find-book.cgi	prod	cgi	Find Book	Search
 find-author.cgi	prod	cgi	Find Author	Search
 find-location.cgi	prod	cgi	Find Location	Search

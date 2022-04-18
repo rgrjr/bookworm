@@ -314,9 +314,11 @@ sub post_web_update {
 	my $url = $q->oligo_query('location.cgi',
 				  parent_location_id => $self->location_id);
 	push(@links, $q->a({ href => $url }, '[Add child location]'));
-	$url = $q->oligo_query('move-books.cgi',
-			       location_id => $self->location_id);
-	push(@links, $q->a({ href => $url }, '[Move book(s) here]'));
+	for my $thing (qw(book location)) {
+	    $url = $q->oligo_query("move-${thing}s.cgi",
+				   location_id => $self->location_id);
+	    push(@links, $q->a({ href => $url }, "[Move $thing(s) here]"));
+	}
 	unless (@{$self->location_children} || @{$self->book_children}) {
 	    $url = $q->oligo_query('delete-location.cgi',
 				   location_id => $self->location_id);
@@ -482,6 +484,72 @@ sub web_move_books {
 		     ? ' in ' . $old_location->html_link($q)
 		     : '');
 	print($q->li($book->html_link($q), $where), "\n");
+    }
+    print("</ul>\n", $q->commit_button(doit => 'Move'), ' &nbsp; ',
+	  $q->submit(doit => 'Skip'),
+	  $q->end_form(), "\n");
+    $q->_footer();
+}
+
+sub web_move_locations {
+    my ($self, $q) = @_;
+
+    my @locations = map {
+	my $location = Bookworm::Location->fetch($_);
+	$location ? ($location) : ();
+    } $q->param('new_child_id');
+    my $return_address
+	= $q->param('return_address') || $self->home_page_url($q);
+    my $location_id = $self->location_id;
+    my $doit = $q->param('doit') || '';
+    my $error_message;
+    if ($doit eq 'Skip') {
+	print $q->redirect($return_address);
+	return;
+    }
+    elsif (! @locations) {
+	# Need to find some locations.
+	my $return = $q->modified_self_url();
+	my $search_url = $q->oligo_query('find-location.cgi',
+					 return_address => $return,
+					 return_field => 'new_child_id',
+					 multiple_p => 1);
+	print $q->redirect($search_url);
+	return;
+    }
+    elsif ($doit eq 'Move') {
+	# Move the locations and redirect.
+	my $dbh = $self->db_connection;
+	$dbh->begin_work();
+	for my $location (@locations) {
+	    $location->parent_location_id($location_id);
+	    $location->update($dbh);
+	    $error_message = 'Oops:  ' . $dbh->errstr, last
+		if $dbh->errstr;
+	}
+	if (! $error_message) {
+	    $dbh->commit();
+	    print $q->redirect($return_address);
+	    return;
+	}
+	$dbh->rollback();
+    }
+
+    # Show a confirmation page. 
+    $q->_header(title => 'Confirm move');
+    print($q->p($q->b($error_message)), "\n")
+	if $error_message;
+    print($q->h3("Move the following locations to ", $self->html_link($q)),
+	  $q->start_form(), "\n",
+	  $q->hidden(location_id => $location_id),
+	  $q->hidden(new_child_id => $q->param('new_child_id')),
+	  "\n<ul>\n");
+    for my $location (@locations) {
+	my $old_location = $location->parent_location;
+	my $where = ($old_location
+		     ? ' in ' . $old_location->html_link($q)
+		     : '');
+	print($q->li($location->html_link($q), $where), "\n");
     }
     print("</ul>\n", $q->commit_button(doit => 'Move'), ' &nbsp; ',
 	  $q->submit(doit => 'Skip'),
@@ -767,6 +835,15 @@ C<book_id> parameters in hand, we present a page with the book titles
 and their old locations and ask the user to confirm the move.  If the
 user clicks the confirm button, the book locations are updated, and
 the user is redirected back to the destination location page.
+
+=head3 web_move_locations
+
+Given a C<ModGen::CGI> object, implements the C<move-locations.cgi>
+page.  Redirects to C<find-location.cgi> to query the user for a set
+of locations to move under C<$self>, presents a confirmation page, and
+if told to make the change, updates the C<parent_location_id> of each
+selected location to point to ourself, then redirects back to our
+C<return_address>, or our home page if not given a C<return_address>.
 
 =head3 weight
 
