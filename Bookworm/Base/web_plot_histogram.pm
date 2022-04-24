@@ -17,10 +17,12 @@ sub web_plot_histogram {
 	# [insecure.  -- rgr, 2-Apr-22.]
 	open(my $out, '>', $data_file_name)
 	    or die "oops:  $!";
-	for my $bin (sort(keys(%data))) {
+	# Sort bin values numerically, because gnuplot has trouble with
+	# out-of-order values.  Don't suppress zeros either, because gnuplot
+	# draws the boxes too wide in that case.
+	for my $bin (sort { $a <=> $b } keys(%data)) {
 	    my $count = $data{$bin};
-	    print $out "$bin\t$count\n"
-		if $count;
+	    print $out "$bin\t$count\n";
 	}
     }
     {

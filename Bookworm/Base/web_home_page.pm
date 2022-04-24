@@ -96,16 +96,16 @@ sub web_home_page {
 	print($q->blockquote($q->table(join("\n", @rows))), "\n");
 
 	# Weight histogram distribution plot.
-	my %histogram_hash;
+	my @histogram_values;
 	for my $bin (0 .. @histogram_bins-1) {
-	    my $count = $histogram_bins[$bin];
-	    next
-		unless $count;
+	    # Include zeros, because gnuplot has trouble with missing values.
 	    my $value = $bin * $bin_width;
-	    $histogram_hash{$value} = $count;
+	    my $count = $histogram_bins[$bin] || 0;
+	    push(@histogram_values, $value, $count || 0);
 	}
+
 	my $url = $q->oligo_query('plot-hist.cgi',
-				  data => join(';', %histogram_hash));
+				  data => join(';', @histogram_values));
 	print($q->p($q->img({ src => $url, alt => 'Histogram of weights' })),
 	      "\n");
     }
