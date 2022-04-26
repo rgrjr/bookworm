@@ -166,10 +166,10 @@ my @local_display_fields
 	 type => 'self_link', class => 'Bookworm::Location' },
        { accessor => 'description', pretty_name => 'Description',
 	 type => 'text', rows => 8, columns => 80 },
-       { accessor => 'weight', pretty_name => 'Packed weight',
-	 type => 'number', show_total_p => 1 },
        { accessor => 'destination', pretty_name => 'Destination',
 	 type => 'string', size => 80 },
+       { accessor => 'weight', pretty_name => 'Packed weight',
+	 type => 'number', show_total_p => 1 },
        { accessor => 'total_weight', pretty_name => 'Total weight',
 	 verbosity => 2, show_total_p => 1 },
        { accessor => 'bg_color', pretty_name => 'Background',
@@ -342,7 +342,7 @@ sub post_web_update {
 			 ? ($self->present_sorted_content
 			    ($q, "$unlink locations",
 			     [ qw(name n_total_books description),
-			       qw(total_weight destination) ],
+			       qw(destination total_weight) ],
 			     $child_locations,
 			     prefix => 'locations', default_sort => 'name')
 			    . "<br>\n")
@@ -619,11 +619,11 @@ sub default_search_fields {
 	     { accessor => 'description',
 	       pretty_name => 'Description',
 	       search_type => 'name', search_field => 'location.description' },
+	     { accessor => 'destination', pretty_name => 'Destination',
+	       type => 'string', search_field => 'location.destination' },
 	     { accessor => 'weight', pretty_name => 'Packed weight',
 	       type => 'number', search_field => 'location.weight',
 	       show_total_p => 1 },
-	     { accessor => 'destination', pretty_name => 'Destination',
-	       type => 'string', search_field => 'location.destination' },
 	     { accessor => 'parent_name',
 	       pretty_name => 'Parent location',
 	       search_type => 'name', search_field => 'parent.name' },
@@ -640,7 +640,7 @@ sub default_display_columns {
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
 	     qw(n_total_books description),
-	     qw(weight destination parent_location_id) ];
+	     qw(destination weight parent_location_id) ];
 }
 
 my $base_query

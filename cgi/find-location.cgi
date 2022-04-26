@@ -57,11 +57,6 @@ Look for locations with descriptions that match these words.
 
 Look for locations with destinations that match these words.
 
-=item B<Parent location:>
-
-Look for locations that are in other locations with names that match
-these words.
-
 =item B<Packed weight:>
 
 Show only locations with packed weights within this range.  If either
@@ -69,6 +64,11 @@ limit is left blank, then that limit is not considered as a search
 bound.  Since non-boxes are not given packing weights, use a minimum
 limit of "1" to see only boxes, or a maximum limit of "1" to see
 everything but boxes.
+
+=item B<Parent location:>
+
+Look for locations that are in other locations with names that match
+these words.
 
 =item B<Max locations to show:>
 
