@@ -12,7 +12,7 @@ use base qw(Bookworm::Base);
 
 BEGIN {
     Bookworm::Location->build_field_accessors
-	([ qw(location_id name description destination weight),
+	([ qw(location_id name description destination weight volume),
 	   qw(bg_color parent_location_id) ]);
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
@@ -105,6 +105,16 @@ sub total_weight_p {
 	if @{$self->location_children};
 }
 
+sub total_volume {
+    my ($self) = @_;
+
+    my $total = $self->volume;
+    for my $child (@{$self->location_children}) {
+	$total += $child->total_volume;
+    }
+    return $total;
+}
+
 sub display_info {
     my ($self, $q) = @_;
 
@@ -171,6 +181,10 @@ my @local_display_fields
        { accessor => 'weight', pretty_name => 'Packed weight',
 	 type => 'number', show_total_p => 1 },
        { accessor => 'total_weight', pretty_name => 'Total weight',
+	 verbosity => 2, show_total_p => 1 },
+       { accessor => 'volume', pretty_name => 'Volume',
+	 type => 'number', show_total_p => 1 },
+       { accessor => 'total_volume', pretty_name => 'Total volume',
 	 verbosity => 2, show_total_p => 1 },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
@@ -309,6 +323,7 @@ sub post_web_update {
     my ($self, $q) = @_;
     require ModGen::CGI::make_selection_op_buttons;
 
+    # Produce links.
     my @links;
     if ($self->location_id) {
 	my $url = $q->oligo_query('location.cgi',
@@ -325,40 +340,44 @@ sub post_web_update {
 	    push(@links, $q->a({ href => $url }, '[Delete location]'));
 	}
     }
-    my $unlink = $self->html_link(undef);
+    my @content = ($q->ul(map { $q->li($_); } @links));
+    push(@content, $q->div({ id => 'debug' }, ''));
+
+    # Produce child location and book content, but only if we have any.
     my $child_locations = $self->location_children;
     my $books = $self->book_children;
-    my $selection_buttons
-	= (@$books
-	   ? $q->make_selection_op_buttons(commit => 0, 'Move books')
-	   : '');
-    my $book_presenter = @$books ? $books->[0] : $self;
-    return join("\n",
-		$q->ul(map { $q->li($_); } @links),
-		$q->div({ id => 'debug' }, ''),
-		$q->h3("$unlink contents"),
-		$q->div({ id => 'locations_content' },
-			(@$child_locations
-			 ? ($self->present_sorted_content
-			    ($q, "$unlink locations",
-			     [ qw(name n_total_books description),
-			       qw(destination total_weight) ],
-			     $child_locations,
-			     prefix => 'locations', default_sort => 'name')
-			    . "<br>\n")
-			 : '')),
-		$q->div({ id => 'book_content' },
-			$book_presenter->present_sorted_content
-			    ($q, "$unlink books",
-			     [ { accessor => 'book_id', label => ' ',
-				 pretty_name => 'Select?',
-				 type => 'checkbox', checked_p => 0 },
-			       { accessor => 'title', pretty_name => 'Title',
-				 type => 'self_link' },
-			       qw(publication_year authors category notes) ],
-			     $books,
-			     prefix => 'book', default_sort => 'title:up')),
-		$selection_buttons, "\n");
+    if (@$books || @$child_locations) {
+	my $unlink = $self->html_link(undef);
+	push(@content, $q->h3("$unlink contents"));
+	if (@$child_locations) {
+	    push(@content,
+		 $q->div({ id => 'locations_content' },
+			 ($self->present_sorted_content
+			      ($q, "$unlink locations",
+			       [ qw(name n_total_books description),
+				 qw(destination total_weight total_volume) ],
+			       $child_locations,
+			       prefix => 'locations', default_sort => 'name')
+			  . "<br>\n")));
+	}
+	if (@$books) {
+	    my $book_content =
+		$books->[0]->present_sorted_content
+		    ($q, "$unlink books",
+			[ { accessor => 'book_id', label => ' ',
+			    pretty_name => 'Select?',
+			    type => 'checkbox', checked_p => 0 },
+			  { accessor => 'title', pretty_name => 'Title',
+			    type => 'self_link' },
+			  qw(publication_year authors category notes) ],
+			$books,
+			prefix => 'book', default_sort => 'title:up');
+	    push(@content,
+		 $q->div({ id => 'book_content' }, $book_content),
+		 $q->make_selection_op_buttons(commit => 0, 'Move books'));
+	}
+    }
+    return join("\n", @content, "\n");
 }
 
 sub web_update {
@@ -609,6 +628,50 @@ sub web_delete_location {
     $q->_footer();
 }
 
+### Database plumbing.
+
+sub insert {
+    # Default the volume and weight.
+    my ($self, $dbh) = @_;
+
+    if (! $self->volume) {
+	# Maybe default the volume based on a few standard names.
+	my $volume;	# volume in cubic inches.
+	my $name = $self->name || '';
+	if ($name =~ /u-haul/i) {
+	    if ($name =~ /medium/i) {
+		$volume = 18 * 18 * 16;
+	    }
+	    elsif ($name =~ /large/i) {
+		$volume = 18 * 18 * 25;
+	    }
+	    else {
+		# U-Haul small, typically unlabelled as such.
+		$volume = 13 * 16 * 13;
+	    }
+	}
+	elsif ($name =~ /book box/i) {
+	    $volume = 19 * 15 * 10
+		unless $name =~ /short/i;
+	}
+	elsif ($name =~ /plastic crate/i) {
+	    $volume = 22 * 13 * 15;
+	}
+	elsif ($name =~ /banker'?s? box/i) {
+	    $volume = 16 * 13 * 10;
+	}
+	$self->volume($volume / (12.0 * 12.0 * 12.0))
+	    if $volume;
+    }
+
+    # Last-ditch defaults; these are numeric and can't be undefined.
+    $self->volume(0)
+	unless defined($self->volume);
+    $self->weight(0)
+	unless defined($self->weight);
+    return $self->SUPER::insert($dbh);
+}
+
 ### Searching.
 
 sub default_search_fields {
@@ -622,8 +685,9 @@ sub default_search_fields {
 	     { accessor => 'destination', pretty_name => 'Destination',
 	       type => 'string', search_field => 'location.destination' },
 	     { accessor => 'weight', pretty_name => 'Packed weight',
-	       type => 'number', search_field => 'location.weight',
-	       show_total_p => 1 },
+	       type => 'number', search_field => 'location.weight' },
+	     { accessor => 'volume', pretty_name => 'Volume',
+	       type => 'number', search_field => 'location.volume' },
 	     { accessor => 'parent_name',
 	       pretty_name => 'Parent location',
 	       search_type => 'name', search_field => 'parent.name' },
@@ -640,7 +704,7 @@ sub default_display_columns {
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
 	     qw(n_total_books description),
-	     qw(destination weight parent_location_id) ];
+	     qw(destination weight volume parent_location_id) ];
 }
 
 my $base_query
@@ -802,6 +866,12 @@ C<location_id> rather than the name allows users to change the name.
 Returns L</location_children> as a list (rather than an arrayref), to
 provide the location hierarchy browser with something to browse.
 
+=head3 total_volume
+
+Compute the sum of our C<volume> value and the C<total_volume> of each
+of our L</location_children> recursively, i.e. the volume of
+everything we contain.
+
 =head3 total_weight
 
 Compute the sum of our C<weight> value and the C<total_weight> of each
@@ -824,6 +894,12 @@ Validation method used by C<web_update> to ensure that a new
 C<parent_location_id> is acceptable as a parent location, mostly that
 we're not the root and the new parent doesn't create a cycle.  See the
 L<ModGen::DB::Thing/web_update> method.
+
+=head3 volume
+
+Returns or sets the value of the database field that records the
+volume of the location, usually a packed box.  The user interface does
+not insist on this being in any particular units.
 
 =head3 web_delete_location
 

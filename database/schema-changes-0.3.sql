@@ -14,3 +14,9 @@ alter table location
   add column
     weight decimal(5,1) NOT NULL default '0.0'
   after destination;
+
+--- Rev 3:  Add a location.volume column.
+alter table location
+  add column
+    volume decimal(8,2) NOT NULL default '0.00'
+  after weight;
