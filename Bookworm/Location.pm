@@ -296,6 +296,17 @@ sub root_location_p {
     return ($self->location_id // 0) == 1;
 }
 
+my $child_location_display_columns
+    = [ qw(name n_total_books description destination),
+	qw(total_weight total_volume stackable) ];
+my $book_display_columns
+    = [ { accessor => 'book_id', label => ' ',
+	  pretty_name => 'Select?',
+	  type => 'checkbox', checked_p => 0 },
+	{ accessor => 'title', pretty_name => 'Title',
+	  type => 'self_link' },
+	qw(publication_year authors category notes) ];
+
 sub ajax_sort_content {
     # Handle AJAX requests to sort book or location content.
     my ($self, $q) = @_;
@@ -308,7 +319,7 @@ sub ajax_sort_content {
 	$messages->{locations_content}
 	    = $self->present_sorted_content
 	        ($q, "$unlink locations",
-		 [ qw(name n_total_books description) ],
+		 $child_location_display_columns,
 		 $child_locations,
 		 prefix => 'locations');
     }
@@ -318,12 +329,7 @@ sub ajax_sort_content {
 	$messages->{book_content}
 	    = $book_presenter->present_sorted_content
 		($q, "$unlink books",
-		 [ { accessor => 'book_id', label => ' ',
-		     pretty_name => 'Select?',
-		     type => 'checkbox', checked_p => 0 },
-		   { accessor => 'title', pretty_name => 'Title',
-		     type => 'self_link' },
-		   qw(publication_year authors category notes) ],
+		 $book_display_columns,
 		 $books, prefix => 'book');
     }
     else {
@@ -367,8 +373,7 @@ sub post_web_update {
 		 $q->div({ id => 'locations_content' },
 			 ($self->present_sorted_content
 			      ($q, "$unlink locations",
-			       [ qw(name n_total_books description destination),
-				 qw(total_weight total_volume stackable) ],
+			       $child_location_display_columns,
 			       $child_locations,
 			       prefix => 'locations', default_sort => 'name')
 			  . "<br>\n")));
@@ -377,12 +382,7 @@ sub post_web_update {
 	    my $book_content =
 		$books->[0]->present_sorted_content
 		    ($q, "$unlink books",
-			[ { accessor => 'book_id', label => ' ',
-			    pretty_name => 'Select?',
-			    type => 'checkbox', checked_p => 0 },
-			  { accessor => 'title', pretty_name => 'Title',
-			    type => 'self_link' },
-			  qw(publication_year authors category notes) ],
+			$book_display_columns,
 			$books,
 			prefix => 'book', default_sort => 'title:up');
 	    push(@content,
