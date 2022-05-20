@@ -369,22 +369,21 @@ sub post_web_update {
 	my $unlink = $self->html_link(undef);
 	push(@content, $q->h3("$unlink contents"));
 	if (@$child_locations) {
+	    my $location_content
+		= $self->present_sorted_content
+		    ($q, "$unlink locations",
+		     $child_location_display_columns, $child_locations,
+		     prefix => 'locations', default_sort => 'name');
 	    push(@content,
 		 $q->div({ id => 'locations_content' },
-			 ($self->present_sorted_content
-			      ($q, "$unlink locations",
-			       $child_location_display_columns,
-			       $child_locations,
-			       prefix => 'locations', default_sort => 'name')
-			  . "<br>\n")));
+			 ($location_content . "<br>\n")));
 	}
 	if (@$books) {
 	    my $book_content =
 		$books->[0]->present_sorted_content
 		    ($q, "$unlink books",
-			$book_display_columns,
-			$books,
-			prefix => 'book', default_sort => 'title:up');
+		     $book_display_columns, $books,
+		     prefix => 'book', default_sort => 'title:up');
 	    push(@content,
 		 $q->div({ id => 'book_content' }, $book_content),
 		 $q->make_selection_op_buttons(commit => 0, 'Move books'));
@@ -893,6 +892,10 @@ normally a box, is considered stackable.  Possible values are "yes"
 anything stacked on top would be supported only on the location
 container itself and not by the contents), or "never" (meaning do not
 attempt to stack anything on this location).
+
+Note that comparing the values as strings to sort them upwards puts
+them in the order listed above, which is nicely (and serendipitously)
+intuitive in terms of increasing stackability.
 
 =head3 total_volume
 
