@@ -12,7 +12,7 @@ use base qw(Bookworm::Base);
 
 BEGIN {
     Bookworm::Location->build_field_accessors
-	([ qw(location_id name description destination weight volume),
+	([ qw(location_id name description destination weight volume stackable),
 	   qw(bg_color parent_location_id) ]);
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
@@ -115,6 +115,12 @@ sub total_volume {
     return $total;
 }
 
+sub has_stackable_p {
+    my ($self) = @_;
+
+    return 0 == @{$self->location_children};
+}
+
 sub display_info {
     my ($self, $q) = @_;
 
@@ -186,6 +192,13 @@ my @local_display_fields
 	 type => 'number', show_total_p => 1 },
        { accessor => 'total_volume', pretty_name => 'Total volume',
 	 verbosity => 2, show_total_p => 1 },
+       { accessor => 'stackable', pretty_name => 'Stack?',
+	 skip_if_not => \&has_stackable_p,
+	 type => 'enumeration',
+	 values => [ qw(yes no never) ],
+	 search_multiple => 1,
+	 search_field => 'location.stackable',
+	 search_default => [ qw(yes no never) ] },
        { accessor => 'bg_color', pretty_name => 'Background',
 	 type => 'enumeration',
 	 values => \@background_colors },
@@ -354,8 +367,8 @@ sub post_web_update {
 		 $q->div({ id => 'locations_content' },
 			 ($self->present_sorted_content
 			      ($q, "$unlink locations",
-			       [ qw(name n_total_books description),
-				 qw(destination total_weight total_volume) ],
+			       [ qw(name n_total_books description destination),
+				 qw(total_weight total_volume stackable) ],
 			       $child_locations,
 			       prefix => 'locations', default_sort => 'name')
 			  . "<br>\n")));
@@ -688,6 +701,7 @@ sub default_search_fields {
 	       type => 'number', search_field => 'location.weight' },
 	     { accessor => 'volume', pretty_name => 'Volume',
 	       type => 'number', search_field => 'location.volume' },
+	     'stackable',
 	     { accessor => 'parent_name',
 	       pretty_name => 'Parent location',
 	       search_type => 'name', search_field => 'parent.name' },
@@ -704,7 +718,7 @@ sub default_display_columns {
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
 	     qw(n_total_books description),
-	     qw(destination weight volume parent_location_id) ];
+	     qw(destination weight volume stackable parent_location_id) ];
 }
 
 my $base_query
@@ -806,6 +820,11 @@ provides, used as extra information on the Location Tree page.
 Class method that fetches the "Somewhere" location.  Hierarchy browser
 support.
 
+=head3 has_stackable_p
+
+Returns true if it makes sense to consider the stackability of this
+container.  This is so only if we have no child containers.
+
 =head3 home_page_name
 
 Returns the string "location.cgi", so that the C<home_page_url> method
@@ -865,6 +884,15 @@ C<location_id> rather than the name allows users to change the name.
 
 Returns L</location_children> as a list (rather than an arrayref), to
 provide the location hierarchy browser with something to browse.
+
+=head3 stackable
+
+Returns or sets a database field that records whether the location,
+normally a box, is considered stackable.  Possible values are "yes"
+(meaning arbitrary things can be stacked on top), "no" (meaning
+anything stacked on top would be supported only on the location
+container itself and not by the contents), or "never" (meaning do not
+attempt to stack anything on this location).
 
 =head3 total_volume
 

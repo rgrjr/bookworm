@@ -20,3 +20,10 @@ alter table location
   add column
     volume decimal(8,2) NOT NULL default '0.00'
   after weight;
+
+--- Rev 4:  Add a location.stackable column.
+alter table location
+  add column
+    stackable enum('yes', 'no', 'never')
+      NOT NULL default 'yes'
+  after volume;
