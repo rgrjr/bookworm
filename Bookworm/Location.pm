@@ -14,6 +14,7 @@ BEGIN {
     Bookworm::Location->build_field_accessors
 	([ qw(location_id name description destination weight volume stackable),
 	   qw(bg_color parent_location_id) ]);
+    Bookworm::Location->define_class_slots(qw(density));  # Search results.
     Bookworm::Location->build_fetch_accessor
 	(qw(parent_location parent_location_id Bookworm::Location));
     Bookworm::Location->build_set_fetch_accessor
@@ -113,6 +114,26 @@ sub total_volume {
 	$total += $child->total_volume;
     }
     return $total;
+}
+
+sub has_volume_p {
+    # The volume itself is not a boolean, because zero floats are always true.
+    my ($self) = @_;
+
+    return 0 != $self->volume;
+}
+
+sub has_weight_p {
+    # The weight is also not a boolean.
+    my ($self) = @_;
+
+    return 0 != $self->weight;
+}
+
+sub has_density_p {
+    my ($self) = @_;
+
+    $self->has_weight_p && $self->has_volume_p;
 }
 
 sub has_stackable_p {
@@ -686,6 +707,13 @@ sub insert {
 
 ### Searching.
 
+my $compute_density
+    # If location.volume is zero, then density is zero, else compute normally.
+    # This is split out so that it can be computed anew in any WHERE clause
+    # selection, since computed columns are not yet in scope there.  We don't
+    # worry about NULL values here as both columns are declared "NOT NULL".
+    = q{if(location.volume = 0, 0, location.weight / location.volume)};
+
 sub default_search_fields {
     return [ { accessor => 'name',
 	       pretty_name => 'Location name',
@@ -700,6 +728,9 @@ sub default_search_fields {
 	       type => 'number', search_field => 'location.weight' },
 	     { accessor => 'volume', pretty_name => 'Volume',
 	       type => 'number', search_field => 'location.volume' },
+	     { accessor => 'density', pretty_name => 'Density',
+	       type => 'number',
+	       search_field => $compute_density },
 	     'stackable',
 	     { accessor => 'parent_name',
 	       pretty_name => 'Parent location',
@@ -716,17 +747,22 @@ sub default_display_columns {
 	       type => 'return_address_link',
 	       return_address => 'location.cgi',
 	       default_sort => 'asc' },
-	     qw(n_total_books description),
-	     qw(destination weight volume stackable parent_location_id) ];
+	     qw(n_total_books description destination weight volume),
+	     { accessor => 'density', pretty_name => 'Density',
+	       type => 'number', n_digits => 3,
+	       skip_if_not => \&has_density_p,
+	       search_field => '_density' },
+	     qw(stackable parent_location_id) ];
 }
 
 my $base_query
     # This needs to be a left join so that the top-level location (which
     # doesn't have a parent) can be returned as the result of a search.
-    = q{select location.*, parent.name as parent_name
-	from location
-	     left join location as parent
-		  on parent.location_id = location.parent_location_id};
+    = qq{select location.*, parent.name as parent_name,
+		$compute_density as _density
+	 from location
+	      left join location as parent
+		   on parent.location_id = location.parent_location_id};
 
 sub web_search {
     my ($class, $q, @options) = @_;
@@ -796,6 +832,12 @@ location search result display.
 Returns an arrayref of attribute descriptors and attribute names that
 define location search dialog fields.
 
+=head3 density
+
+Returns or sets a value for the density of the location.  This is
+computed in SQL by the search page, so is only valid for search
+results.
+
 =head3 description
 
 Returns or sets a free text description of the location.  This is
@@ -819,10 +861,25 @@ provides, used as extra information on the Location Tree page.
 Class method that fetches the "Somewhere" location.  Hierarchy browser
 support.
 
+=head3 has_density_p
+
+Return true if we have a meaningful density.  This is true if both
+volume and weight are positive.
+
 =head3 has_stackable_p
 
 Returns true if it makes sense to consider the stackability of this
 container.  This is so only if we have no child containers.
+
+=head3 has_volume_p
+
+Returns true if we have non-zero volume (since a zero float is not a
+boolean false to Perl).
+
+=head3 has_weight_p
+
+Returns true if we have non-zero weight (since a zero float is not a
+boolean false to Perl).
 
 =head3 home_page_name
 
