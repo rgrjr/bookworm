@@ -45,6 +45,9 @@ sub format_location_chain_field {
 	my $ancestor = Bookworm::Location->fetch($ancestor_id);
 	last
 	    unless $ancestor;
+	last
+	    # Leave off the root unless it's our immediate parent.
+	    if $spew && ! $ancestor->parent_location_id;
 	my $link = $ancestor->html_link($q);
 	$spew = ($spew ? "$link &gt;&gt; $spew" : $link);
 	$ancestor_id = $ancestor->parent_location_id;
