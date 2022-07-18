@@ -36,14 +36,14 @@ sub web_home_page {
     {
 	my ($total_weight, $n_desc) = (0, 0);
 	my $sth = $dbh->prepare
-	    (q{select weight, destination from location
+	    (q{select weight, volume, destination from location
 	           where weight > 0.0})
 	    or die $dbh->errstr;
 	$sth->execute()
 	    or die $dbh->errstr;
 	while (my @row = $sth->fetchrow_array) {
 	    $n_desc++;
-	    my ($weight, $destination) = @row;
+	    my ($weight, $volume, $destination) = @row;
 	    $total_weight += $weight;
 	    # Note that we're making these case-insensitive, but keeping the
 	    # case of the first one we encounter.
@@ -51,6 +51,7 @@ sub web_home_page {
 			||= [ $destination, 0, 0.0 ]);
 	    $dest->[1]++;
 	    $dest->[2] += $weight;
+	    $dest->[3] += $volume;
 	    my $bin = int($weight / $bin_width);
 	    $histogram_bins[$bin]++;
 	}
@@ -80,9 +81,11 @@ sub web_home_page {
 
 	# Table of weights by destination.
 	my @rows
-	    = (q{<tr><th>Destination</th><th>Boxes</th><th>Weight</th></tr>});
+	    = (q{<tr><th>Destination</th><th>Boxes</th>}
+	       . q{<th>Weight</th><th>Volume</th></tr>});
 	for my $dest_name (sort(keys(%destinations))) {
-	    my ($dest, $count, $weight) = @{$destinations{$dest_name}};
+	    my ($dest, $count, $weight, $volume)
+		= @{$destinations{$dest_name}};
 	    my $search_url = $q->oligo_query('find-location.cgi',
 					     destination => $dest);
 	    my $search_link
@@ -91,7 +94,9 @@ sub web_home_page {
 		 $q->Tr($q->td($search_link),
 			$q->td({ align => 'right' }, $count),
 			$q->td({ align => 'right' },
-			       sprintf('%.1f', $weight))));
+			       sprintf('%.1f', $weight)),
+			$q->td({ align => 'right' },
+			       sprintf('%.2f', $volume))));
 	}
 	print($q->blockquote($q->table(join("\n", @rows))), "\n");
 
