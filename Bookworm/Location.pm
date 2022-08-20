@@ -409,6 +409,56 @@ sub post_web_update {
 		 $q->div({ id => 'book_content' }, $book_content),
 		 $q->make_selection_op_buttons(commit => 0, 'Move books'));
 	}
+	elsif ($self->name =~ /^pod/i) {
+	    # See if we have child locations.
+
+	    # Build @histogram_bins.
+	    my $weight_string = '.';
+	    my $bin_width = 5;
+	    my @histogram_bins;
+	    my $dbh = $self->db_connection();
+	    {
+		my ($total_weight, $n_desc) = (0, 0);
+		my $weights = $dbh->selectcol_arrayref
+		    (q{select weight from location
+			   where weight > 0.0
+			   and parent_location_id = ?},
+		     undef, $self->location_id)
+		    or die $dbh->errstr;
+		for my $weight (@$weights) {
+		    $n_desc++;
+		    $total_weight += $weight;
+		    my $bin = int($weight / $bin_width);
+		    $histogram_bins[$bin]++;
+		}
+
+		# If we have child locations with weight and no books, that
+		# makes us a real container.
+		if ($total_weight > 0) {
+		    my $search_url = $q->oligo_query('find-location.cgi',
+						     weight_min => 1);
+		    my $search_link
+			= $q->a({ href => $search_url }, "in $n_desc",
+				($n_desc > 1 ? 'locations' : 'location'));
+
+		    # Weight histogram distribution plot.
+		    my @histogram_values;
+		    for my $bin (0 .. @histogram_bins-1) {
+			# Include zeros, because gnuplot has trouble with
+			# missing values.
+			my $value = $bin * $bin_width;
+			my $count = $histogram_bins[$bin] || 0;
+			push(@histogram_values, $value, $count || 0);
+		    }
+
+		    my $data = join(';', @histogram_values);
+		    my $url = $q->oligo_query('plot-hist.cgi', data => $data);
+		    push(@content,
+			 $q->p($q->img({ src => $url,
+					 alt => 'Histogram of weights' })));
+		}
+	    }
+	}
     }
     return join("\n", @content, "\n");
 }
